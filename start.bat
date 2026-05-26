@@ -17,7 +17,7 @@ if %errorlevel% neq 0 (
 )
 
 :: Check if node_modules exists
-if not exist "node_modules\" (
+if not exist "node_modules\next" (
     echo [SETUP] Installing dependencies...
     call npm install
     if %errorlevel% neq 0 (
@@ -32,32 +32,39 @@ if not exist "node_modules\" (
 if not exist ".env" (
     echo [SETUP] Creating .env from .env.example...
     copy .env.example .env
-    echo [INFO] Please edit .env with your database URL before continuing.
-    echo        Open .env in a text editor and fill in DATABASE_URL and DIRECT_URL
+    echo.
+    echo [IMPORTANT] Edit .env with your Supabase DATABASE_URL and DIRECT_URL
+    echo            Save the file, then come back here.
+    echo.
     notepad .env
     echo.
 )
 
 :: Generate Prisma client
 echo [SETUP] Generating Prisma client...
-call npx prisma generate >nul 2>nul
-
-:: Check if build exists
-if not exist ".next\" (
-    echo [BUILD] Building for first time...
-    call npm run build
-    if %errorlevel% neq 0 (
-        echo [WARN] Build failed, starting in dev mode instead...
-        echo.
-        echo Starting dev server on http://localhost:3211 ...
-        echo Press Ctrl+C to stop
-        echo.
-        start http://localhost:3211
-        call npm run dev:3211
-        goto :end
-    )
+call npx prisma generate
+if %errorlevel% neq 0 (
+    echo [ERROR] Prisma generate failed! Check your .env DATABASE_URL
+    pause
+    exit /b 1
 )
 
+:: Always build before starting production
+echo.
+echo [BUILD] Building production bundle...
+call npm run build
+if %errorlevel% neq 0 (
+    echo.
+    echo [WARN] Build failed! Starting in dev mode instead...
+    echo.
+    start http://localhost:3211
+    call npm run dev:3211
+    pause
+    exit /b 0
+)
+
+echo.
+echo [OK] Build successful!
 echo.
 echo Starting ProfileOS on http://localhost:3211 ...
 echo Press Ctrl+C to stop
@@ -69,5 +76,4 @@ start http://localhost:3211
 :: Start production server
 call npm run start:3211
 
-:end
 pause
