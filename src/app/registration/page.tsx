@@ -85,23 +85,25 @@ export default function RegistrationPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 animate-fade-in">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Auto Registration</h1>
-          <p className="text-sm text-gray-400">Automated multi-platform account creation</p>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Auto Registration</h1>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Automated multi-platform account creation</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={syncAccounts}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors border border-gray-700"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+            style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
           >
             <RefreshCw className="w-4 h-4" />
             Sync to GPMTool
           </button>
           <button
             onClick={() => setIsFormOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-colors"
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             <Plus className="w-4 h-4" />
             New Task

@@ -815,8 +815,11 @@ export default function AutoRegisterPage() {
   }, [accountFilters.platform, accountFilters.status, accountFilters.email])
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Auto Register Module</h1>
+    <div className="space-y-4 animate-fade-in">
+      <div>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Auto Register Module</h1>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Automated account registration</p>
+      </div>
       <div className="flex flex-wrap gap-2">
         {[
           { id: 'tasks', label: 'Tasks' },
@@ -829,17 +832,16 @@ export default function AutoRegisterPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as typeof activeTab)}
-            className={`px-3 py-1 rounded text-sm ${
-              activeTab === tab.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'
-            }`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activeTab === tab.id ? 'text-white' : ''}`}
+            style={activeTab === tab.id ? { backgroundColor: 'var(--accent)' } : { backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
           >
             {tab.label}
           </button>
         ))}
       </div>
 
-      <div className="bg-white rounded-lg shadow p-4 space-y-3">
-        <div className="text-sm text-gray-600">
+      <div className="rounded-xl border p-4 space-y-3" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
           Service: {status?.running ? 'Running' : 'Stopped'} | PID: {status?.pid ?? '-'} | Base URL:{' '}
           {status?.baseUrl ?? '-'}
         </div>
@@ -847,63 +849,63 @@ export default function AutoRegisterPage() {
           <button
             onClick={startService}
             disabled={loading || status?.running}
-            className="px-4 py-2 rounded bg-green-600 text-white disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-colors bg-emerald-600"
           >
             Start AutoReg
           </button>
           <button
             onClick={stopService}
             disabled={loading || !status?.running}
-            className="px-4 py-2 rounded bg-red-600 text-white disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-colors bg-red-600"
           >
             Stop AutoReg
           </button>
           <button
             onClick={() => loadStatus().catch(() => null)}
-            className="px-4 py-2 rounded bg-gray-100 text-gray-700"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
           >
             Refresh Status
           </button>
         </div>
       </div>
 
-      {activeTab === 'config' ? <div className="bg-white rounded-lg shadow p-4 space-y-3">
-        <h2 className="font-semibold">AutoReg Core Config</h2>
+      {activeTab === 'config' ? <div className="rounded-xl border p-4 space-y-3" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>AutoReg Core Config</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Mail provider (default)
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.mail_provider}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, mail_provider: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             YesCaptcha key
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.yescaptcha_key}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, yescaptcha_key: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             MoeMail API URL
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.moemail_api_url}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, moemail_api_url: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             MoeMail API Key
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.moemail_api_key}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, moemail_api_key: e.target.value }))
@@ -913,117 +915,117 @@ export default function AutoRegisterPage() {
           <label className="text-sm md:col-span-2">
             Proxy URL (optional)
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.proxy_url}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, proxy_url: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             SkyMail API Base
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.skymail_api_base}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, skymail_api_base: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             SkyMail Token
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.skymail_token}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, skymail_token: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             SkyMail Domain
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.skymail_domain}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, skymail_domain: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             LuckMail Base URL
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.luckmail_base_url}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, luckmail_base_url: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             LuckMail API Key
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.luckmail_api_key}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, luckmail_api_key: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             LuckMail Email Type
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.luckmail_email_type}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, luckmail_email_type: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             LuckMail Domain
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.luckmail_domain}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, luckmail_domain: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             CPA API URL
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.cpa_api_url}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, cpa_api_url: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             CPA API Key
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.cpa_api_key}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, cpa_api_key: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Sub2API URL
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.sub2api_api_url}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, sub2api_api_url: e.target.value }))
               }
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Sub2API Key
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.sub2api_api_key}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, sub2api_api_key: e.target.value }))
@@ -1033,7 +1035,7 @@ export default function AutoRegisterPage() {
           <label className="text-sm md:col-span-2">
             Sub2API Group IDs
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={configForm.sub2api_group_ids}
               onChange={(e) =>
                 setConfigForm((prev) => ({ ...prev, sub2api_group_ids: e.target.value }))
@@ -1045,26 +1047,26 @@ export default function AutoRegisterPage() {
           <button
             onClick={saveConfig}
             disabled={configSaving || !status?.running}
-            className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-colors" style={{ backgroundColor: 'var(--accent)' }}
           >
             Save Config
           </button>
           <button
             onClick={() => loadConfig().catch(() => null)}
-            className="px-4 py-2 rounded bg-gray-100 text-gray-700"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
           >
             Reload Config
           </button>
         </div>
       </div> : null}
 
-      {activeTab === 'tasks' ? <div className="bg-white rounded-lg shadow p-4 space-y-3">
-        <h2 className="font-semibold">Create Register Task</h2>
+      {activeTab === 'tasks' ? <div className="rounded-xl border p-4 space-y-3" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Create Register Task</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Platform
             <select
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.platform}
               onChange={(e) => setForm((prev) => ({ ...prev, platform: e.target.value }))}
             >
@@ -1076,33 +1078,33 @@ export default function AutoRegisterPage() {
             </select>
           </label>
 
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Mail provider
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.mail_provider}
               onChange={(e) => setForm((prev) => ({ ...prev, mail_provider: e.target.value }))}
             />
           </label>
 
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Count
             <input
               type="number"
               min={1}
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.count}
               onChange={(e) => setForm((prev) => ({ ...prev, count: Number(e.target.value || 1) }))}
             />
           </label>
 
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Concurrency
             <input
               type="number"
               min={1}
               max={5}
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.concurrency}
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, concurrency: Number(e.target.value || 1) }))
@@ -1110,13 +1112,13 @@ export default function AutoRegisterPage() {
             />
           </label>
 
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Delay seconds
             <input
               type="number"
               min={0}
               step={0.5}
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.register_delay_seconds}
               onChange={(e) =>
                 setForm((prev) => ({
@@ -1127,13 +1129,13 @@ export default function AutoRegisterPage() {
             />
           </label>
 
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Random delay min
             <input
               type="number"
               min={0}
               step={0.5}
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={(form as any).random_delay_min ?? 0}
               onChange={(e) =>
                 setForm((prev) => ({
@@ -1144,13 +1146,13 @@ export default function AutoRegisterPage() {
             />
           </label>
 
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Random delay max
             <input
               type="number"
               min={0}
               step={0.5}
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={(form as any).random_delay_max ?? 0}
               onChange={(e) =>
                 setForm((prev) => ({
@@ -1161,10 +1163,10 @@ export default function AutoRegisterPage() {
             />
           </label>
 
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task proxy (optional)
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={(form as any).proxy ?? ''}
               onChange={(e) =>
                 setForm((prev) => ({
@@ -1175,10 +1177,10 @@ export default function AutoRegisterPage() {
             />
           </label>
 
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Fixed email (optional)
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={(form as any).email ?? ''}
               onChange={(e) =>
                 setForm((prev) => ({
@@ -1189,10 +1191,10 @@ export default function AutoRegisterPage() {
             />
           </label>
 
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Fixed password (optional)
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={(form as any).password ?? ''}
               onChange={(e) =>
                 setForm((prev) => ({
@@ -1203,130 +1205,130 @@ export default function AutoRegisterPage() {
             />
           </label>
 
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Captcha solver
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.captcha_solver}
               onChange={(e) => setForm((prev) => ({ ...prev, captcha_solver: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Solver URL
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.solver_url}
               onChange={(e) => setForm((prev) => ({ ...prev, solver_url: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task YesCaptcha key
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.yescaptcha_key}
               onChange={(e) => setForm((prev) => ({ ...prev, yescaptcha_key: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task MoeMail URL
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.moemail_api_url}
               onChange={(e) => setForm((prev) => ({ ...prev, moemail_api_url: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task MoeMail Key
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.moemail_api_key}
               onChange={(e) => setForm((prev) => ({ ...prev, moemail_api_key: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task SkyMail Base
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.skymail_api_base}
               onChange={(e) => setForm((prev) => ({ ...prev, skymail_api_base: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task SkyMail Token
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.skymail_token}
               onChange={(e) => setForm((prev) => ({ ...prev, skymail_token: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task SkyMail Domain
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.skymail_domain}
               onChange={(e) => setForm((prev) => ({ ...prev, skymail_domain: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task LuckMail Base
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.luckmail_base_url}
               onChange={(e) => setForm((prev) => ({ ...prev, luckmail_base_url: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task LuckMail Key
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.luckmail_api_key}
               onChange={(e) => setForm((prev) => ({ ...prev, luckmail_api_key: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task LuckMail Type
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.luckmail_email_type}
               onChange={(e) => setForm((prev) => ({ ...prev, luckmail_email_type: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task LuckMail Domain
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.luckmail_domain}
               onChange={(e) => setForm((prev) => ({ ...prev, luckmail_domain: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task CPA URL
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.cpa_api_url}
               onChange={(e) => setForm((prev) => ({ ...prev, cpa_api_url: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task CPA Key
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.cpa_api_key}
               onChange={(e) => setForm((prev) => ({ ...prev, cpa_api_key: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task Sub2API URL
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.sub2api_api_url}
               onChange={(e) => setForm((prev) => ({ ...prev, sub2api_api_url: e.target.value }))}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Task Sub2API Key
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.sub2api_api_key}
               onChange={(e) => setForm((prev) => ({ ...prev, sub2api_api_key: e.target.value }))}
             />
@@ -1334,7 +1336,7 @@ export default function AutoRegisterPage() {
           <label className="text-sm md:col-span-2">
             Task Sub2API Group IDs
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={form.sub2api_group_ids}
               onChange={(e) => setForm((prev) => ({ ...prev, sub2api_group_ids: e.target.value }))}
             />
@@ -1349,13 +1351,13 @@ export default function AutoRegisterPage() {
         </button>
       </div> : null}
 
-      {activeTab === 'schedules' ? <div className="bg-white rounded-lg shadow p-4 space-y-3">
-        <h2 className="font-semibold">Scheduled Tasks</h2>
+      {activeTab === 'schedules' ? <div className="rounded-xl border p-4 space-y-3" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Scheduled Tasks</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Interval type
             <select
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               value={scheduleForm.interval_type}
               onChange={(e) =>
                 setScheduleForm((prev) => ({ ...prev, interval_type: e.target.value }))
@@ -1365,10 +1367,10 @@ export default function AutoRegisterPage() {
               <option value="hours">hours</option>
             </select>
           </label>
-          <label className="text-sm">
+          <label className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Interval value
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               type="number"
               min={1}
               value={scheduleForm.interval_value}
@@ -1391,14 +1393,14 @@ export default function AutoRegisterPage() {
           </button>
           <button
             onClick={() => loadScheduledTasks().catch(() => null)}
-            className="px-4 py-2 rounded bg-gray-100 text-gray-700"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
           >
             Refresh
           </button>
         </div>
-        <div className="overflow-auto border rounded">
+        <div className="overflow-auto rounded-lg border" style={{ borderColor: 'var(--border-color)' }}>
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead style={{ backgroundColor: 'var(--bg-surface-2)' }}>
               <tr>
                 <th className="px-2 py-1 text-left">Task ID</th>
                 <th className="px-2 py-1 text-left">Platform</th>
@@ -1410,7 +1412,7 @@ export default function AutoRegisterPage() {
             <tbody>
               {scheduledTasks.length === 0 ? (
                 <tr>
-                  <td className="px-2 py-2 text-gray-500" colSpan={5}>
+                  <td className="px-2 py-2 text-center" style={{ color: 'var(--text-muted)' }} colSpan={5}>
                     No scheduled tasks.
                   </td>
                 </tr>
@@ -1451,17 +1453,17 @@ export default function AutoRegisterPage() {
         </div>
       </div> : null}
 
-      {activeTab === 'tasks' ? <div className="bg-white rounded-lg shadow p-4 space-y-2">
-        <h2 className="font-semibold">Task Monitor</h2>
+      {activeTab === 'tasks' ? <div className="rounded-xl border p-4 space-y-2" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Task Monitor</h2>
         {!task ? (
-          <div className="text-sm text-gray-500">No active register task.</div>
+          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>No active register task.</div>
         ) : (
           <>
-            <div className="text-sm">Task ID: {task.id}</div>
-            <div className="text-sm">Status: {task.status}</div>
-            <div className="text-sm">Progress: {task.progress}</div>
-            <div className="text-sm">Success: {task.success ?? 0}</div>
-            <div className="text-sm">Skipped: {task.skipped ?? 0}</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Task ID: {task.id}</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Status: {task.status}</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Progress: {task.progress}</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Success: {task.success ?? 0}</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Skipped: {task.skipped ?? 0}</div>
             <div className="max-h-64 overflow-auto bg-gray-50 border rounded p-2 text-xs">
               {(task.logs || []).slice(-60).map((line, idx) => (
                 <div key={`${idx}-${line}`}>{line}</div>
@@ -1474,17 +1476,17 @@ export default function AutoRegisterPage() {
         )}
       </div> : null}
 
-      {activeTab === 'tasks' ? <div className="bg-white rounded-lg shadow p-4 space-y-2">
-        <h2 className="font-semibold">Recent Runtime Tasks</h2>
+      {activeTab === 'tasks' ? <div className="rounded-xl border p-4 space-y-2" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Recent Runtime Tasks</h2>
         <button
           onClick={() => loadTaskList().catch(() => null)}
-          className="px-4 py-2 rounded bg-gray-100 text-gray-700"
+          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
         >
           Refresh
         </button>
-        <div className="overflow-auto border rounded">
+        <div className="overflow-auto rounded-lg border" style={{ borderColor: 'var(--border-color)' }}>
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead style={{ backgroundColor: 'var(--bg-surface-2)' }}>
               <tr>
                 <th className="px-2 py-1 text-left">ID</th>
                 <th className="px-2 py-1 text-left">Status</th>
@@ -1495,7 +1497,7 @@ export default function AutoRegisterPage() {
             <tbody>
               {taskList.length === 0 ? (
                 <tr>
-                  <td className="px-2 py-2 text-gray-500" colSpan={4}>
+                  <td className="px-2 py-2 text-center" style={{ color: 'var(--text-muted)' }} colSpan={4}>
                     No runtime tasks.
                   </td>
                 </tr>
@@ -1518,8 +1520,8 @@ export default function AutoRegisterPage() {
         </div>
       </div> : null}
 
-      {activeTab === 'tasks' ? <div className="bg-white rounded-lg shadow p-4 space-y-2">
-        <h2 className="font-semibold">Task History</h2>
+      {activeTab === 'tasks' ? <div className="rounded-xl border p-4 space-y-2" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Task History</h2>
         <div className="flex gap-2">
           <input
             className="flex-1 border rounded px-2 py-1 text-sm"
@@ -1535,14 +1537,14 @@ export default function AutoRegisterPage() {
           </button>
           <button
             onClick={() => loadTaskLogs().catch(() => null)}
-            className="px-3 py-1 rounded bg-gray-100 text-gray-700"
+            className="px-3 py-1 rounded-lg text-xs transition-colors" style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
           >
             Refresh
           </button>
         </div>
-        <div className="overflow-auto border rounded">
+        <div className="overflow-auto rounded-lg border" style={{ borderColor: 'var(--border-color)' }}>
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead style={{ backgroundColor: 'var(--bg-surface-2)' }}>
               <tr>
                 <th className="px-2 py-1 text-left">ID</th>
                 <th className="px-2 py-1 text-left">Platform</th>
@@ -1554,7 +1556,7 @@ export default function AutoRegisterPage() {
             <tbody>
               {taskLogs.length === 0 ? (
                 <tr>
-                  <td className="px-2 py-2 text-gray-500" colSpan={5}>
+                  <td className="px-2 py-2 text-center" style={{ color: 'var(--text-muted)' }} colSpan={5}>
                     No task logs.
                   </td>
                 </tr>
@@ -1574,8 +1576,8 @@ export default function AutoRegisterPage() {
         </div>
       </div> : null}
 
-      {activeTab === 'proxies' ? <div className="bg-white rounded-lg shadow p-4 space-y-2">
-        <h2 className="font-semibold">Proxy Pool</h2>
+      {activeTab === 'proxies' ? <div className="rounded-xl border p-4 space-y-2" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Proxy Pool</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <input
             className="border rounded px-2 py-1 text-sm"
@@ -1608,7 +1610,7 @@ export default function AutoRegisterPage() {
           </button>
           <button
             onClick={() => loadProxies().catch(() => null)}
-            className="px-3 py-1 rounded bg-gray-100 text-gray-700"
+            className="px-3 py-1 rounded-lg text-xs transition-colors" style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
           >
             Refresh
           </button>
@@ -1619,9 +1621,9 @@ export default function AutoRegisterPage() {
             Check Proxies
           </button>
         </div>
-        <div className="overflow-auto border rounded">
+        <div className="overflow-auto rounded-lg border" style={{ borderColor: 'var(--border-color)' }}>
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead style={{ backgroundColor: 'var(--bg-surface-2)' }}>
               <tr>
                 <th className="px-2 py-1 text-left">ID</th>
                 <th className="px-2 py-1 text-left">URL</th>
@@ -1634,7 +1636,7 @@ export default function AutoRegisterPage() {
             <tbody>
               {proxies.length === 0 ? (
                 <tr>
-                  <td className="px-2 py-2 text-gray-500" colSpan={6}>
+                  <td className="px-2 py-2 text-center" style={{ color: 'var(--text-muted)' }} colSpan={6}>
                     No proxies.
                   </td>
                 </tr>
@@ -1670,9 +1672,9 @@ export default function AutoRegisterPage() {
         </div>
       </div> : null}
 
-      {activeTab === 'accounts' ? <div className="bg-white rounded-lg shadow p-4 space-y-2">
-        <h2 className="font-semibold">Accounts (AutoReg)</h2>
-        <div className="text-sm text-gray-600">
+      {activeTab === 'accounts' ? <div className="rounded-xl border p-4 space-y-2" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Accounts (AutoReg)</h2>
+        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
           Total: {accountStats?.total ?? 0} | By platform:{' '}
           {accountStats ? Object.entries(accountStats.by_platform).map(([k, v]) => `${k}:${v}`).join(', ') : '-'}
         </div>
@@ -1697,7 +1699,7 @@ export default function AutoRegisterPage() {
           />
           <button
             onClick={() => loadAccounts().catch(() => null)}
-            className="px-3 py-1 rounded bg-gray-100 text-gray-700"
+            className="px-3 py-1 rounded-lg text-xs transition-colors" style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
           >
             Refresh
           </button>
@@ -1722,9 +1724,9 @@ export default function AutoRegisterPage() {
             Export CSV
           </button>
         </div>
-        <div className="overflow-auto border rounded">
+        <div className="overflow-auto rounded-lg border" style={{ borderColor: 'var(--border-color)' }}>
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead style={{ backgroundColor: 'var(--bg-surface-2)' }}>
               <tr>
                 <th className="px-2 py-1 text-left">ID</th>
                 <th className="px-2 py-1 text-left">Platform</th>
@@ -1737,7 +1739,7 @@ export default function AutoRegisterPage() {
             <tbody>
               {accounts.length === 0 ? (
                 <tr>
-                  <td className="px-2 py-2 text-gray-500" colSpan={6}>
+                  <td className="px-2 py-2 text-center" style={{ color: 'var(--text-muted)' }} colSpan={6}>
                     No accounts.
                   </td>
                 </tr>
@@ -1769,8 +1771,8 @@ export default function AutoRegisterPage() {
 
       {activeTab === 'integrations' ? (
         <div className="space-y-4">
-          <div className="bg-white rounded-lg shadow p-4 space-y-3">
-            <h2 className="font-semibold">Integration Services</h2>
+          <div className="rounded-xl border p-4 space-y-3" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Integration Services</h2>
             <div className="flex gap-2">
               <button
                 onClick={() => runIntegrationAll('start-all')}
@@ -1786,14 +1788,14 @@ export default function AutoRegisterPage() {
               </button>
               <button
                 onClick={() => loadIntegrationServices().catch(() => null)}
-                className="px-3 py-1 rounded bg-gray-100 text-gray-700"
+                className="px-3 py-1 rounded-lg text-xs transition-colors" style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
               >
                 Refresh
               </button>
             </div>
-            <div className="overflow-auto border rounded">
+            <div className="overflow-auto rounded-lg border" style={{ borderColor: 'var(--border-color)' }}>
               <table className="min-w-full text-sm">
-                <thead className="bg-gray-50">
+                <thead style={{ backgroundColor: 'var(--bg-surface-2)' }}>
                   <tr>
                     <th className="px-2 py-1 text-left">Name</th>
                     <th className="px-2 py-1 text-left">Installed</th>
@@ -1804,7 +1806,7 @@ export default function AutoRegisterPage() {
                 <tbody>
                   {integrationServices.length === 0 ? (
                     <tr>
-                      <td className="px-2 py-2 text-gray-500" colSpan={4}>
+                      <td className="px-2 py-2 text-center" style={{ color: 'var(--text-muted)' }} colSpan={4}>
                         No services.
                       </td>
                     </tr>
@@ -1842,8 +1844,8 @@ export default function AutoRegisterPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4 space-y-3">
-            <h2 className="font-semibold">Backfill + Batch Actions</h2>
+          <div className="rounded-xl border p-4 space-y-3" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Backfill + Batch Actions</h2>
             <div className="flex gap-2">
               <button
                 disabled={integrationLoading}

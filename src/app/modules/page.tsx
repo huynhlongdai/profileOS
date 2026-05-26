@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useToastContext } from '@/components/ToastProvider'
+import { RefreshCw, Layers, Power } from 'lucide-react'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
 
 interface Module {
   name: string
@@ -15,11 +19,12 @@ interface Module {
 export default function ModulesPage() {
   const [modules, setModules] = useState<Module[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const { showToast } = useToastContext()
 
   useEffect(() => {
     fetchModules()
-    const interval = setInterval(fetchModules, 60000) // Auto-refresh every 60s
+    const interval = setInterval(fetchModules, 60000)
     return () => clearInterval(interval)
   }, [])
 
@@ -27,27 +32,19 @@ export default function ModulesPage() {
     try {
       const res = await fetch('/api/modules')
       const data = await res.json()
-      if (data.success) {
-        setModules(data.modules)
-      } else {
-        showToast(data.error || 'Error loading modules', 'error')
-      }
-    } catch (error) {
-      console.error('Error fetching modules:', error)
+      if (data.success) setModules(data.modules)
+      else showToast(data.error || 'Error loading modules', 'error')
+    } catch {
       showToast('Error loading modules', 'error')
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }
 
   const toggleModule = async (module: Module) => {
     const newEnabled = !module.enabled
-    // Optimistic update
-    setModules((prev) =>
-      prev.map((m) =>
-        m.name === module.name ? { ...m, enabled: newEnabled } : m
-      )
-    )
+    setModules(prev => prev.map(m => m.name === module.name ? { ...m, enabled: newEnabled } : m))
 
     try {
       const res = await fetch(`/api/modules/${module.name}`, {
@@ -55,112 +52,93 @@ export default function ModulesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled: newEnabled }),
       })
-
       const data = await res.json()
       if (data.success) {
-        showToast(
-          `Module ${module.label} ${newEnabled ? 'enabled' : 'disabled'}`,
-          'success'
-        )
-        // Update with server response
-        setModules((prev) =>
-          prev.map((m) =>
-            m.name === module.name ? { ...m, enabled: data.module.enabled } : m
-          )
-        )
+        showToast(`${module.label} ${newEnabled ? 'enabled' : 'disabled'}`, 'success')
+        setModules(prev => prev.map(m => m.name === module.name ? { ...m, enabled: data.module.enabled } : m))
       } else {
-        // Revert on error
-        setModules((prev) =>
-          prev.map((m) =>
-            m.name === module.name ? { ...m, enabled: module.enabled } : m
-          )
-        )
+        setModules(prev => prev.map(m => m.name === module.name ? { ...m, enabled: module.enabled } : m))
         showToast(data.error || 'Error updating module', 'error')
       }
-    } catch (error) {
-      // Revert on error
-      setModules((prev) =>
-        prev.map((m) =>
-          m.name === module.name ? { ...m, enabled: module.enabled } : m
-        )
-      )
-      console.error('Error toggling module:', error)
+    } catch {
+      setModules(prev => prev.map(m => m.name === module.name ? { ...m, enabled: module.enabled } : m))
       showToast('Error updating module', 'error')
     }
   }
 
   if (loading) {
-    return <div className="text-center py-12">Loading...</div>
+    return (
+      <div className="space-y-3 animate-fade-in">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-20 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--bg-surface)' }} />
+        ))}
+      </div>
+    )
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Modules</h1>
-        <button
-          onClick={fetchModules}
-          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-        >
-          🔄 Refresh
-        </button>
+    <div className="space-y-4 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Modules</h1>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            {modules.length} modules &middot; {modules.filter(m => m.enabled).length} enabled
+          </p>
+        </div>
+        <Button variant="secondary" size="sm" onClick={() => { setRefreshing(true); fetchModules() }} loading={refreshing}>
+          <RefreshCw size={14} />
+          <span className="hidden sm:inline">Refresh</span>
+        </Button>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Module
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Mô tả
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Version
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Enabled
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {modules.map((module) => (
-              <tr key={module.name} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {module.label}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">
-                  {module.description}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {module.version}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <button
-                    onClick={() => toggleModule(module)}
-                    className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
-                      module.enabled
-                        ? 'bg-green-600 hover:bg-green-500 text-white'
-                        : 'bg-gray-300 hover:bg-gray-400 text-gray-800'
-                    }`}
-                  >
-                    {module.enabled ? 'Enabled' : 'Disabled'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-
-            {modules.length === 0 && (
-              <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-400">
-                  Chưa có module nào được khai báo.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      {/* Module Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {modules.map((module) => (
+          <Card key={module.name}>
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: module.enabled ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-surface-2)' }}
+                >
+                  <Layers size={18} style={{ color: module.enabled ? 'var(--accent)' : 'var(--text-muted)' }} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{module.label}</h3>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>v{module.version}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => toggleModule(module)}
+                className={`relative w-11 h-6 rounded-full transition-colors ${module.enabled ? 'bg-indigo-600' : ''}`}
+                style={!module.enabled ? { backgroundColor: 'var(--bg-surface-2)' } : undefined}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                    module.enabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+            <p className="text-xs mt-3 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              {module.description}
+            </p>
+            <div className="mt-3">
+              <Badge variant={module.enabled ? 'success' : 'muted'} dot>
+                {module.enabled ? 'Enabled' : 'Disabled'}
+              </Badge>
+            </div>
+          </Card>
+        ))}
       </div>
+
+      {modules.length === 0 && (
+        <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
+          <Layers size={40} className="mx-auto mb-3 opacity-30" />
+          <p className="text-sm">No modules found</p>
+        </div>
+      )}
     </div>
   )
 }
-
