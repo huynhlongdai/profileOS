@@ -261,48 +261,39 @@ export default function RecordingsPage() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Action Recordings</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Manage and replay browser automation recordings
+    <div className="space-y-4 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Action Recordings</h1>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            {recordings.length} recordings
           </p>
         </div>
-        <div className="mt-4 sm:mt-0 flex gap-2">
-          <a
-            href="/recordings/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            ➕ New Recording
-          </a>
-          <button
-            onClick={() => setTestRecording(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-          >
-            🎬 Test Record
-          </button>
+        <div className="flex gap-2">
+          <a href="/recordings/new" className="px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-colors" style={{ backgroundColor: 'var(--accent)' }}>New Recording</a>
+          <button onClick={() => setTestRecording(true)} className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}>Test Record</button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <div className="rounded-xl border p-4" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Search</label>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Search</label>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name..."
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Status</label>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Status</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           >
             <option value="">All</option>
             <option value="draft">Draft</option>
@@ -311,11 +302,11 @@ export default function RecordingsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Account Type</label>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Type</label>
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           >
             <option value="">All</option>
             <option value="gmail">Gmail</option>
@@ -323,14 +314,14 @@ export default function RecordingsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Per Page</label>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Per Page</label>
           <select
             value={perPage}
             onChange={(e) => {
               setPerPage(Number(e.target.value))
               setCurrentPage(1)
             }}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           >
             <option value={10}>10</option>
             <option value={25}>25</option>
@@ -338,118 +329,73 @@ export default function RecordingsPage() {
             <option value={100}>100</option>
           </select>
         </div>
+        </div>
       </div>
 
       {/* Table */}
       {loading ? (
-        <div className="mt-8 text-center text-gray-500">Loading...</div>
+        <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-12 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--bg-surface)' }} />)}</div>
       ) : paginatedRecordings.length === 0 ? (
-        <div className="mt-8 text-center text-gray-500">No recordings found</div>
+        <div className="text-center py-12 text-sm" style={{ color: 'var(--text-muted)' }}>No recordings found</div>
       ) : (
-        <div className="mt-8 flow-root">
-          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <table className="min-w-full divide-y divide-gray-300">
+        <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+          <div className="overflow-x-auto">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr>
-                    <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
-                      Name
-                    </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Account Type
-                    </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Actions
-                    </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Duration
-                    </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Status
-                    </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Runs
-                    </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Updated
-                    </th>
-                    <th className="relative py-3.5 pl-3 pr-4 sm:pr-0">
-                      <span className="sr-only">Actions</span>
-                    </th>
+                  <tr style={{ backgroundColor: 'var(--bg-surface-2)' }}>
+                    {['Name', 'Type', 'Actions', 'Duration', 'Status', 'Runs', 'Updated', ''].map(h => (
+                      <th key={h} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
                   {paginatedRecordings.map((recording) => (
-                    <tr key={recording.id}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                    <tr key={recording.id} className="hover:brightness-110 transition-colors" style={{ borderColor: 'var(--border-color)' }}>
+                      <td className="whitespace-nowrap px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                         <div>
                           <div>{recording.name}</div>
                           {recording.description && (
-                            <div className="text-xs text-gray-500">{recording.description}</div>
+                            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{recording.description}</div>
                           )}
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <td className="whitespace-nowrap px-4 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
                         {recording.accountType || '-'}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <td className="whitespace-nowrap px-4 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
                         {recording.actionCount}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <td className="whitespace-nowrap px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                         {formatDuration(recording.durationMs)}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        <span
-                          className={`inline-flex rounded-full px-2 text-xs font-semibold ${
-                            recording.status === 'published'
-                              ? 'bg-green-100 text-green-800'
-                              : recording.status === 'archived'
-                                ? 'bg-gray-100 text-gray-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                          }`}
-                        >
+                      <td className="whitespace-nowrap px-4 py-3 text-xs">
+                        <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${recording.status === 'published' ? 'bg-emerald-500/20 text-emerald-300' : recording.status === 'archived' ? 'bg-gray-500/20 text-gray-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
                           {recording.status}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <td className="whitespace-nowrap px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                         {recording.runCount || 0}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <td className="whitespace-nowrap px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                         {new Date(recording.updatedAt).toLocaleDateString()}
                       </td>
-                      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      <td className="whitespace-nowrap px-4 py-3 text-right text-xs">
                         <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleViewRecording(recording.id)}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            View
-                          </button>
-                          <button
-                            onClick={() => setReplayRecording(recording)}
-                            className="text-green-600 hover:text-green-900"
-                          >
-                            Replay
-                          </button>
-                          <button
-                            onClick={() => handleDelete(recording.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Delete
-                          </button>
+                          <button onClick={() => handleViewRecording(recording.id)} style={{ color: 'var(--accent)' }} className="hover:underline">View</button>
+                          <button onClick={() => setReplayRecording(recording)} className="text-emerald-400 hover:underline">Replay</button>
+                          <button onClick={() => handleDelete(recording.id)} className="text-red-400 hover:underline">Delete</button>
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
           </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-gray-700">
+            <div className="p-4 flex items-center justify-between border-t" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 Showing {startIndex + 1} to {Math.min(endIndex, recordings.length)} of{' '}
                 {recordings.length} recordings
               </div>
@@ -457,7 +403,7 @@ export default function RecordingsPage() {
                 <button
                   onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-1.5 text-xs rounded-lg border disabled:opacity-50 transition-colors" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
                 >
                   ← Previous
                 </button>
@@ -467,7 +413,7 @@ export default function RecordingsPage() {
                 <button
                   onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-1.5 text-xs rounded-lg border disabled:opacity-50 transition-colors" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
                 >
                   Next →
                 </button>

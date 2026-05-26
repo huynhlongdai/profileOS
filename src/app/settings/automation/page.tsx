@@ -536,28 +536,28 @@ export default function AutomationSettingsPage() {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p className="mt-2 text-gray-600">Loading...</p>
+      <div className="space-y-3 animate-fade-in">
+        {[1, 2, 3].map(i => <div key={i} className="h-32 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--bg-surface)' }} />)}
       </div>
     )
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Automation Settings</h1>
+    <div className="space-y-4 animate-fade-in">
+      <div>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Automation Settings</h1>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Task engine, schedules & run history</p>
       </div>
 
       {/* Task Engine Config */}
-      <div className="bg-white shadow rounded-lg p-6 mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
           Task Engine Configuration
         </h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Số luồng chạy song song (Max Concurrent Tasks)
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+              Max Concurrent Tasks
             </label>
             <input
               type="number"
@@ -569,17 +569,19 @@ export default function AutomationSettingsPage() {
                   maxConcurrentTasks: parseInt(e.target.value) || 3,
                 })
               }
-              className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-32 px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-1"
+              style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             />
-            <p className="mt-1 text-sm text-gray-500">
-              Số lượng tasks tối đa được phép chạy đồng thời (1-50)
+            <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+              Max tasks running simultaneously (1-50)
             </p>
           </div>
           <div className="flex items-center space-x-4">
             <button
               onClick={saveTaskEngineConfig}
               disabled={saving}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50 transition-colors"
+              style={{ backgroundColor: 'var(--accent)' }}
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
@@ -588,102 +590,66 @@ export default function AutomationSettingsPage() {
       </div>
 
       {/* Module Schedules */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             Scheduled Tasks
           </h2>
           <button
             onClick={() => openScheduleModal()}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-colors"
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             + Add Schedule
           </button>
         </div>
 
         {schedules.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">
+          <p className="text-center py-8 text-sm" style={{ color: 'var(--text-muted)' }}>
             No schedules configured. Click &quot;Add Schedule&quot; to create one.
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Module
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Schedule
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Last Run
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Next Run
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ backgroundColor: 'var(--bg-surface-2)' }}>
+                  {['Module', 'Type', 'Schedule', 'Status', 'Last Run', 'Next Run', 'Actions'].map(h => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
                 {schedules.map((schedule) => (
-                  <tr key={schedule.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <tr key={schedule.id} className="hover:brightness-110 transition-colors" style={{ borderColor: 'var(--border-color)' }}>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                       {schedule.moduleName}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-semibold ${
-                          schedule.type === 'care'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-blue-100 text-blue-800'
-                        }`}
-                      >
+                    <td className="px-4 py-3 whitespace-nowrap text-xs">
+                      <span className={`px-2 py-1 rounded font-semibold ${schedule.type === 'care' ? 'bg-purple-500/20 text-purple-300' : 'bg-blue-500/20 text-blue-300'}`}>
                         {schedule.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
                       {formatScheduleInfo(schedule)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
                       <button
                         onClick={() => toggleSchedule(schedule)}
-                        className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
-                          schedule.enabled
-                            ? 'bg-green-600 hover:bg-green-500 text-white'
-                            : 'bg-gray-300 hover:bg-gray-400 text-gray-800'
-                        }`}
+                        className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${schedule.enabled ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-400'}`}
+                        style={!schedule.enabled ? { backgroundColor: 'var(--bg-surface-2)' } : undefined}
                       >
                         {schedule.enabled ? 'Enabled' : 'Disabled'}
                       </button>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-xs" style={{ color: 'var(--text-muted)' }}>
                       {formatDateTime(schedule.lastRunAt)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-xs" style={{ color: 'var(--text-muted)' }}>
                       {formatDateTime(schedule.nextRunAt)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                      <button
-                        onClick={() => openScheduleModal(schedule)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteSchedule(schedule.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
+                    <td className="px-4 py-3 whitespace-nowrap text-center text-xs font-medium space-x-2">
+                      <button onClick={() => openScheduleModal(schedule)} style={{ color: 'var(--accent)' }} className="hover:underline">Edit</button>
+                      <button onClick={() => deleteSchedule(schedule.id)} className="text-red-400 hover:underline">Delete</button>
                     </td>
                   </tr>
                 ))}
@@ -694,24 +660,25 @@ export default function AutomationSettingsPage() {
       </div>
 
       {/* Scheduler Runs History */}
-      <div className="bg-white shadow rounded-lg p-6 mt-6">
+      <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             Scheduler Run History
           </h2>
           <button
             onClick={fetchSchedulerRuns}
             disabled={loadingRuns}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-colors"
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             {loadingRuns ? 'Loading...' : 'Refresh'}
           </button>
         </div>
 
         {/* Filters */}
-        <div className="mb-4 flex flex-wrap gap-4">
+        <div className="mb-4 flex flex-wrap gap-3">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
               Schedule
             </label>
             <select
@@ -719,7 +686,8 @@ export default function AutomationSettingsPage() {
               onChange={(e) =>
                 setRunFilters({ ...runFilters, scheduleId: e.target.value, offset: 0 })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             >
               <option value="">All Schedules</option>
               {schedules.map((s) => (
@@ -730,7 +698,7 @@ export default function AutomationSettingsPage() {
             </select>
           </div>
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
               Status
             </label>
             <select
@@ -738,7 +706,8 @@ export default function AutomationSettingsPage() {
               onChange={(e) =>
                 setRunFilters({ ...runFilters, status: e.target.value, offset: 0 })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             >
               <option value="">All Statuses</option>
               <option value="running">Running</option>
@@ -748,7 +717,7 @@ export default function AutomationSettingsPage() {
             </select>
           </div>
           <div className="flex-1 min-w-[150px]">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
               Limit
             </label>
             <select
@@ -760,7 +729,8 @@ export default function AutomationSettingsPage() {
                   offset: 0,
                 })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             >
               <option value="25">25</option>
               <option value="50">50</option>
@@ -773,87 +743,63 @@ export default function AutomationSettingsPage() {
         {/* Runs Table */}
         {loadingRuns ? (
           <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            <p className="mt-2 text-gray-600">Loading runs...</p>
+            <div className="h-32 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--bg-surface-2)' }} />
           </div>
         ) : schedulerRuns.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No scheduler runs found.</p>
+          <p className="text-center py-8 text-sm" style={{ color: 'var(--text-muted)' }}>No scheduler runs found.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Schedule
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Accounts
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Started At
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Duration
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Error
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ backgroundColor: 'var(--bg-surface-2)' }}>
+                  {['Schedule', 'Status', 'Accounts', 'Started At', 'Duration', 'Error', 'Actions'].map(h => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
                 {schedulerRuns.map((run) => (
-                  <tr key={run.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <tr key={run.id} className="hover:brightness-110 transition-colors" style={{ borderColor: 'var(--border-color)' }}>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm">
                       {run.schedule ? (
                         <div>
-                          <div className="font-medium text-gray-900">
+                          <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
                             {run.schedule.moduleName}
                           </div>
-                          <div className="text-gray-500">{run.schedule.type}</div>
+                          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{run.schedule.type}</div>
                         </div>
                       ) : (
-                        <span className="text-gray-400">Schedule deleted</span>
+                        <span style={{ color: 'var(--text-muted)' }}>Schedule deleted</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {getStatusBadge(run.status)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-center text-xs" style={{ color: 'var(--text-secondary)' }}>
                       <div>Enqueued: {run.accountsEnqueued}</div>
                       {run.accountsProcessed !== null && (
-                        <div className="text-xs text-gray-400">
+                        <div style={{ color: 'var(--text-muted)' }}>
                           Processed: {run.accountsProcessed}
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-xs" style={{ color: 'var(--text-muted)' }}>
                       {formatDateTime(run.startedAt)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-xs" style={{ color: 'var(--text-muted)' }}>
                       {formatDuration(run.durationMs)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-4 py-3 text-xs">
                       {run.errorMessage ? (
-                        <span className="text-red-600 truncate block max-w-xs" title={run.errorMessage}>
+                        <span className="text-red-400 truncate block max-w-xs" title={run.errorMessage}>
                           {run.errorMessage.substring(0, 50)}...
                         </span>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span style={{ color: 'var(--text-muted)' }}>-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                      <button
-                        onClick={() => openRunModal(run)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        View
-                      </button>
+                    <td className="px-4 py-3 whitespace-nowrap text-center text-xs">
+                      <button onClick={() => openRunModal(run)} style={{ color: 'var(--accent)' }} className="hover:underline">View</button>
                     </td>
                   </tr>
                 ))}
@@ -866,14 +812,14 @@ export default function AutomationSettingsPage() {
       {/* Schedule Modal */}
       {showScheduleModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 my-8">
-            <h3 className="text-lg font-semibold mb-4">
+          <div className="rounded-xl border p-6 max-w-2xl w-full mx-4 my-8" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+            <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
               {editingSchedule ? 'Edit Schedule' : 'Create Schedule'}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                   Loại Account (Email/X/Facebook...)
                 </label>
                 <select
@@ -888,7 +834,7 @@ export default function AutomationSettingsPage() {
                     })
                     await fetchAccountsForModule(accountType, null)
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 >
                   {modules.map((m) => (
                     <option key={m.name} value={m.name}>
@@ -902,7 +848,7 @@ export default function AutomationSettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                   Type
                 </label>
                 <select
@@ -913,7 +859,7 @@ export default function AutomationSettingsPage() {
                       type: e.target.value as 'check' | 'care',
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 >
                   <option value="check">Check</option>
                   <option value="care">Care</option>
@@ -921,7 +867,7 @@ export default function AutomationSettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                   Schedule Type
                 </label>
                 <select
@@ -938,7 +884,7 @@ export default function AutomationSettingsPage() {
                       daysOfWeek: newType === 'weekly' ? [] : [],
                     })
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 >
                   <option value="interval">Interval (Mỗi X phút)</option>
                   <option value="daily">Daily (Mỗi ngày vào giờ X:Y)</option>
@@ -949,7 +895,7 @@ export default function AutomationSettingsPage() {
               {/* Interval Configuration */}
               {scheduleForm.scheduleType === 'interval' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                     Interval (phút)
                   </label>
                   <input
@@ -962,7 +908,7 @@ export default function AutomationSettingsPage() {
                         intervalMin: parseInt(e.target.value) || null,
                       })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                   />
                   {scheduleForm.intervalMin && (
                     <p className="mt-1 text-sm text-gray-500">
@@ -980,7 +926,7 @@ export default function AutomationSettingsPage() {
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                         Giờ (0-23)
                       </label>
                       <input
@@ -994,11 +940,11 @@ export default function AutomationSettingsPage() {
                             hour: parseInt(e.target.value) || null,
                           })
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                         Phút (0-59)
                       </label>
                       <input
@@ -1012,7 +958,7 @@ export default function AutomationSettingsPage() {
                             minute: parseInt(e.target.value) || null,
                           })
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                       />
                     </div>
                   </div>
@@ -1028,7 +974,7 @@ export default function AutomationSettingsPage() {
               {/* Weekly Days Configuration */}
               {scheduleForm.scheduleType === 'weekly' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                     Chọn các ngày trong tuần
                   </label>
                   <div className="grid grid-cols-4 gap-2">
@@ -1057,7 +1003,7 @@ export default function AutomationSettingsPage() {
 
               {/* Account Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                   Chọn Accounts {scheduleForm.moduleName ? `(${scheduleForm.moduleName})` : ''}
                 </label>
                 {!scheduleForm.moduleName ? (
@@ -1073,7 +1019,7 @@ export default function AutomationSettingsPage() {
                     ) : (
                     <>
                       <div className="mb-2 flex items-center justify-between">
-                        <span className="text-sm text-gray-600">
+                        <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                           Đã chọn: {scheduleForm.accountIds.length} / {accounts.length}
                         </span>
                         <div className="space-x-2">
@@ -1180,14 +1126,16 @@ export default function AutomationSettingsPage() {
             <div className="mt-6 flex justify-end space-x-3">
               <button
                 onClick={closeScheduleModal}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
               >
                 Cancel
               </button>
               <button
                 onClick={saveSchedule}
                 disabled={saving}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50 transition-colors"
+                style={{ backgroundColor: 'var(--accent)' }}
               >
                 {saving ? 'Saving...' : 'Save'}
               </button>
@@ -1199,22 +1147,22 @@ export default function AutomationSettingsPage() {
       {/* Scheduler Run Detail Modal */}
       {showRunModal && selectedRun && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg p-6 max-w-3xl w-full mx-4 my-8">
-            <h3 className="text-lg font-semibold mb-4">Scheduler Run Details</h3>
+          <div className="rounded-xl border p-6 max-w-3xl w-full mx-4 my-8" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+            <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Scheduler Run Details</h3>
 
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                     Status
                   </label>
                   <div>{getStatusBadge(selectedRun.status)}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                     Run ID
                   </label>
-                  <div className="text-sm text-gray-600 font-mono">
+                  <div className="text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
                     {selectedRun.id}
                   </div>
                 </div>
@@ -1222,10 +1170,10 @@ export default function AutomationSettingsPage() {
 
               {selectedRun.schedule && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                     Schedule
                   </label>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                     {selectedRun.schedule.moduleName} - {selectedRun.schedule.type} (
                     {selectedRun.schedule.scheduleType})
                   </div>
@@ -1234,19 +1182,19 @@ export default function AutomationSettingsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                     Accounts Enqueued
                   </label>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                     {selectedRun.accountsEnqueued}
                   </div>
                 </div>
                 {selectedRun.accountsProcessed !== null && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                       Accounts Processed
                     </label>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                       {selectedRun.accountsProcessed}
                     </div>
                   </div>
@@ -1255,19 +1203,19 @@ export default function AutomationSettingsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                     Started At
                   </label>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                     {formatDateTime(selectedRun.startedAt)}
                   </div>
                 </div>
                 {selectedRun.completedAt && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                       Completed At
                     </label>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                       {formatDateTime(selectedRun.completedAt)}
                     </div>
                   </div>
@@ -1276,10 +1224,10 @@ export default function AutomationSettingsPage() {
 
               {selectedRun.durationMs !== null && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                     Duration
                   </label>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                     {formatDuration(selectedRun.durationMs)} ({selectedRun.durationMs}ms)
                   </div>
                 </div>
@@ -1287,7 +1235,7 @@ export default function AutomationSettingsPage() {
 
               {selectedRun.errorMessage && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                     Error Message
                   </label>
                   <div className="text-sm text-red-600 bg-red-50 p-3 rounded border border-red-200 font-mono whitespace-pre-wrap break-words">
@@ -1298,7 +1246,7 @@ export default function AutomationSettingsPage() {
 
               {selectedRun.metaJson && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                     Additional Information
                   </label>
                   <pre className="text-xs text-gray-600 bg-gray-50 p-3 rounded border border-gray-200 overflow-auto max-h-40">
@@ -1311,7 +1259,8 @@ export default function AutomationSettingsPage() {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={closeRunModal}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
               >
                 Close
               </button>

@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useToastContext } from '@/components/ToastProvider'
+import { RefreshCw, ListTodo, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import Card, { StatCard } from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
 
 interface Task {
   id: string
@@ -22,26 +26,31 @@ interface TaskStats {
   isProcessing: boolean
 }
 
+const statusVariant: Record<string, 'warning' | 'info' | 'success' | 'error'> = {
+  pending: 'warning',
+  processing: 'info',
+  completed: 'success',
+  failed: 'error',
+}
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [stats, setStats] = useState<TaskStats | null>(null)
   const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState<string>('')
+  const [refreshing, setRefreshing] = useState(false)
+  const [statusFilter, setStatusFilter] = useState('')
   const { showToast } = useToastContext()
 
   useEffect(() => {
     fetchTasks()
-    const interval = setInterval(fetchTasks, 5000) // Auto-refresh every 5s
+    const interval = setInterval(fetchTasks, 5000)
     return () => clearInterval(interval)
   }, [statusFilter])
 
   const fetchTasks = async () => {
     try {
       const params = new URLSearchParams()
-      if (statusFilter) {
-        params.append('status', statusFilter)
-      }
-
+      if (statusFilter) params.append('status', statusFilter)
       const res = await fetch(`/api/tasks?${params}`)
       const data = await res.json()
       if (data.success) {
@@ -50,38 +59,12 @@ export default function TasksPage() {
       } else {
         showToast('Error loading tasks', 'error')
       }
-    } catch (error) {
-      console.error('Error fetching tasks:', error)
+    } catch {
       showToast('Error loading tasks', 'error')
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
-  }
-
-  const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      processing: 'bg-blue-100 text-blue-800',
-      completed: 'bg-green-100 text-green-800',
-      failed: 'bg-red-100 text-red-800',
-    }
-    return (
-      <span
-        className={`px-2 py-1 text-xs font-semibold rounded-full ${
-          colors[status] || 'bg-gray-100 text-gray-800'
-        }`}
-      >
-        {status}
-      </span>
-    )
-  }
-
-  const getTypeBadge = (type: string) => {
-    return (
-      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-        {type}
-      </span>
-    )
   }
 
   const formatDate = (dateStr?: string) => {
@@ -91,67 +74,64 @@ export default function TasksPage() {
 
   const formatDuration = (startedAt?: string, completedAt?: string) => {
     if (!startedAt || !completedAt) return '-'
-    const start = new Date(startedAt).getTime()
-    const end = new Date(completedAt).getTime()
-    const duration = end - start
+    const duration = new Date(completedAt).getTime() - new Date(startedAt).getTime()
     if (duration < 1000) return `${duration}ms`
     if (duration < 60000) return `${(duration / 1000).toFixed(1)}s`
     return `${(duration / 60000).toFixed(1)}m`
   }
 
+  const pendingCount = tasks.filter(t => t.status === 'pending').length
+  const processingCount = tasks.filter(t => t.status === 'processing').length
+  const completedCount = tasks.filter(t => t.status === 'completed').length
+  const failedCount = tasks.filter(t => t.status === 'failed').length
+
   if (loading) {
-    return <div className="text-center py-12">Loading...</div>
+    return (
+      <div className="space-y-4 animate-fade-in">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-20 rounded-xl animate-pulse" style={{ backgroundColor: 'var(--bg-surface)' }} />
+          ))}
+        </div>
+      </div>
+    )
   }
 
-  const pendingCount = tasks.filter((t) => t.status === 'pending').length
-  const processingCount = tasks.filter((t) => t.status === 'processing').length
-  const completedCount = tasks.filter((t) => t.status === 'completed').length
-  const failedCount = tasks.filter((t) => t.status === 'failed').length
-
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
-        <button
-          onClick={fetchTasks}
-          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-        >
-          🔄 Refresh
-        </button>
+    <div className="space-y-4 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Tasks</h1>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            Auto-refresh 5s
+          </p>
+        </div>
+        <Button variant="secondary" size="sm" onClick={() => { setRefreshing(true); fetchTasks() }} loading={refreshing}>
+          <RefreshCw size={14} />
+          <span className="hidden sm:inline">Refresh</span>
+        </Button>
       </div>
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="text-sm text-gray-500">Queue Length</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.queueLength}</div>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="text-sm text-gray-500">Running</div>
-            <div className="text-2xl font-bold text-blue-600">
-              {stats.runningCount} / {stats.maxConcurrentTasks}
-            </div>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="text-sm text-gray-500">Completed</div>
-            <div className="text-2xl font-bold text-green-600">{completedCount}</div>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="text-sm text-gray-500">Failed</div>
-            <div className="text-2xl font-bold text-red-600">{failedCount}</div>
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatCard label="Queue" value={stats.queueLength} icon={<Clock size={16} />} />
+          <StatCard label="Running" value={`${stats.runningCount}/${stats.maxConcurrentTasks}`} icon={<Loader2 size={16} />} variant="warning" />
+          <StatCard label="Completed" value={completedCount} icon={<CheckCircle2 size={16} />} variant="success" />
+          <StatCard label="Failed" value={failedCount} icon={<XCircle size={16} />} variant={failedCount > 0 ? 'error' : 'default'} />
         </div>
       )}
 
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="flex gap-4 items-center">
-          <label className="text-sm font-medium text-gray-700">Status:</label>
+      {/* Filter */}
+      <Card padding={true}>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Status:</span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+            className="rounded-lg border px-3 py-2 text-sm"
+            style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           >
             <option value="">All</option>
             <option value="pending">Pending ({pendingCount})</option>
@@ -160,88 +140,58 @@ export default function TasksPage() {
             <option value="failed">Failed ({failedCount})</option>
           </select>
         </div>
-      </div>
+      </Card>
 
-      {/* Tasks Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Account ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Priority
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Created
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Started
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Completed
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Duration
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Error
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {tasks.length === 0 ? (
-              <tr>
-                <td colSpan={10} className="px-6 py-4 text-center text-gray-500">
-                  No tasks found
-                </td>
+      {/* Table */}
+      <Card padding={false}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ backgroundColor: 'var(--bg-surface-2)' }}>
+                {['ID', 'Type', 'Status', 'Priority', 'Created', 'Duration', 'Error'].map(h => (
+                  <th key={h} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                ))}
               </tr>
-            ) : (
-              tasks.map((task) => (
-                <tr key={task.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                    {task.id.substring(0, 20)}...
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{getTypeBadge(task.type)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {task.accountId.substring(0, 20)}...
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {task.priority}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(task.status)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(task.createdAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(task.startedAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(task.completedAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDuration(task.startedAt, task.completedAt)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-red-600 max-w-xs truncate">
-                    {task.error || '-'}
+            </thead>
+            <tbody className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
+              {tasks.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center" style={{ color: 'var(--text-muted)' }}>
+                    <ListTodo size={32} className="mx-auto mb-2 opacity-30" />
+                    No tasks found
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                tasks.map((task) => (
+                  <tr key={task.id} className="hover:brightness-110 transition-colors" style={{ borderColor: 'var(--border-color)' }}>
+                    <td className="px-4 py-3 whitespace-nowrap font-mono text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      {task.id.substring(0, 12)}...
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Badge variant="info">{task.type}</Badge>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Badge variant={statusVariant[task.status] || 'default'} dot>{task.status}</Badge>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      {task.priority}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-xs" style={{ color: 'var(--text-muted)' }}>
+                      {formatDate(task.createdAt)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-xs" style={{ color: 'var(--text-muted)' }}>
+                      {formatDuration(task.startedAt, task.completedAt)}
+                    </td>
+                    <td className="px-4 py-3 text-xs max-w-xs truncate" style={{ color: 'var(--color-error)' }}>
+                      {task.error || '-'}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   )
 }
-
