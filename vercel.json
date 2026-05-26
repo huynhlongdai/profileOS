@@ -1,0 +1,12 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npx prisma generate && next build",
+  "functions": {
+    "src/app/api/agent/**/*.ts": {
+      "maxDuration": 30
+    },
+    "src/app/api/logs/stream/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}

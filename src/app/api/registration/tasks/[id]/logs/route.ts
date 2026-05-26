@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { config } from '@/lib/config'
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const taskId = params.id
-  const baseUrl = process.env.AUTO_REG_URL || 'http://localhost:8000'
+  const baseUrl = config.autoReg.baseUrl
   
   try {
     // Forward the request to the auto_reg SSE endpoint

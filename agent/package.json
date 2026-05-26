@@ -1,0 +1,14 @@
+{
+  "name": "profileos-agent",
+  "version": "1.0.0",
+  "description": "ProfileOS Local Agent - GPM Controller via Tailscale",
+  "main": "index.ts",
+  "scripts": {
+    "start": "tsx index.ts",
+    "dev": "tsx watch index.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "tsx": "^4.7.0"
+  }
+}

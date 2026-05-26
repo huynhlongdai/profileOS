@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { Suspense, useEffect, useState, useCallback, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useToastContext } from '@/components/ToastProvider'
 import Modal from '@/components/Modal'
@@ -44,6 +44,14 @@ interface AccountType {
 }
 
 export default function ProfilesPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading...</div>}>
+      <ProfilesContent />
+    </Suspense>
+  )
+}
+
+function ProfilesContent() {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [allProfiles, setAllProfiles] = useState<Profile[]>([])
   const [groups, setGroups] = useState<Group[]>([])

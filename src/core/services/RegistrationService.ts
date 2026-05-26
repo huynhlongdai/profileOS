@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { config } from '@/lib/config'
 import { LogService } from './LogService'
 
 export interface RegistrationPlatform {
@@ -17,7 +18,7 @@ export interface RegistrationTask {
 
 export class RegistrationService {
   private static instance: RegistrationService
-  private baseUrl: string = process.env.AUTO_REG_URL || 'http://localhost:8000'
+  private baseUrl: string = config.autoReg.baseUrl
   private logService: LogService
 
   private constructor() {

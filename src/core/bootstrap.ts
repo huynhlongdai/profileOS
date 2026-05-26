@@ -14,6 +14,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import { config } from '@/lib/config'
 import { LogService } from './services/LogService'
 import { AppConfigService } from './services/AppConfigService'
 import { ModuleService } from './services/ModuleService'
@@ -142,12 +143,14 @@ export function initCore() {
     }
   })()
   
-  // Auto-start scheduler when core is initialized
-  // This ensures scheduler is running as soon as any API route initializes core
-  if (!schedulerStarted) {
+  // Auto-start scheduler only in non-serverless environments
+  // On Vercel, scheduler runs via the local agent instead
+  if (!schedulerStarted && !config.app.isVercel) {
     coreServices.schedulerService.start()
     schedulerStarted = true
     console.log('[Bootstrap] Scheduler auto-started')
+  } else if (config.app.isVercel) {
+    console.log('[Bootstrap] Serverless mode: scheduler disabled (use local agent)')
   }
 
   return coreServices
