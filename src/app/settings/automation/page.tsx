@@ -603,7 +603,7 @@ export default function AutomationSettingsPage() {
 
         {schedules.length === 0 ? (
           <p className="text-gray-500 text-center py-8">
-            No schedules configured. Click "Add Schedule" to create one.
+            No schedules configured. Click &quot;Add Schedule&quot; to create one.
           </p>
         ) : (
           <div className="overflow-x-auto">

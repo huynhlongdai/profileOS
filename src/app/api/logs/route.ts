@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const accountId = searchParams.get('accountId') || undefined
-    const module = searchParams.get('module') || undefined
+    const moduleFilter = searchParams.get('module') || undefined
     const type = searchParams.get('type') || undefined
     const from = searchParams.get('from') ? new Date(searchParams.get('from')!) : undefined
     const to = searchParams.get('to') ? new Date(searchParams.get('to')!) : undefined
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     const result = await logService.listLogs({
       accountId,
-      module,
+      module: moduleFilter,
       type,
       from,
       to,

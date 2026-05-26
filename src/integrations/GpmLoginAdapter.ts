@@ -660,9 +660,6 @@ export class GpmLoginAdapter {
       })
 
       const url = `${this.baseUrl}/profiles/update/${profileId}`
-      console.log(`[GPMLogin API DEBUG] POST ${url}`)
-      console.log(`[GPMLogin API DEBUG] Payload:`, JSON.stringify(payload))
-
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -677,8 +674,6 @@ export class GpmLoginAdapter {
       }
 
       const responseText = await response.text()
-      console.log(`[GPMLogin API DEBUG] Response Status: ${response.status} ${response.statusText}`)
-      console.log(`[GPMLogin API DEBUG] Response Body:`, responseText.substring(0, 1000))
 
       let result: GpmApiResponse
       try {
@@ -686,8 +681,6 @@ export class GpmLoginAdapter {
       } catch (e) {
         throw new Error(`GPMLogin API returned non-JSON response. Status: ${response.status}`)
       }
-      
-      console.log(`GPMLogin update profile response:`, JSON.stringify(result, null, 2))
       
       if (result.success) {
         return true
@@ -712,7 +705,7 @@ export class GpmLoginAdapter {
       const finalName = profileInfo?.name || fallbackName
       
       if (!finalName) {
-        console.error(`[GPMLogin API DEBUG] Profile ${profileId} not found and no fallback name provided`)
+        console.error(`Profile ${profileId} not found and no fallback name provided`)
         return false
       }
 
@@ -723,7 +716,7 @@ export class GpmLoginAdapter {
 
       return await this.updateProfile(profileId, updateData)
     } catch (error) {
-      console.error(`[GPMLogin API DEBUG] Error updating proxy for profile ${profileId}:`, error)
+      console.error(`Error updating proxy for profile ${profileId}:`, error)
       return false
     }
   }

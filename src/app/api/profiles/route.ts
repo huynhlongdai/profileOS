@@ -16,16 +16,6 @@ export async function GET(request: NextRequest) {
     const browserConnectionId = searchParams.get('browserConnectionId') || undefined
     const accountType = searchParams.get('accountType') || undefined
 
-    // DEBUG: Log API parameters
-    console.log('[API /api/profiles] GET request with params:', {
-      status,
-      search,
-      groupId,
-      browserType,
-      accountType,
-      browserConnectionId,
-    })
-
     const profiles = await profileService.listProfiles({ status, search, groupId, browserType, accountType, browserConnectionId })
 
     return NextResponse.json({

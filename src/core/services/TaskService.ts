@@ -104,8 +104,6 @@ export class TaskService {
     const now = new Date()
     const priority = options?.priority ?? 0
 
-    console.log(`[TaskService] Enqueuing ${accountIds.length} ${type} tasks with priority ${priority}`)
-
     for (const accountId of accountIds) {
       const item: TaskItem = {
         id: `${now.getTime()}_${accountId}_${type}_${Math.random()
@@ -119,17 +117,12 @@ export class TaskService {
       this.queue.push(item)
     }
 
-    console.log(`[TaskService] Queue length after enqueue: ${this.queue.length}`)
-
     // Sắp xếp lại queue theo priority
     this.sortQueue()
-
-    console.log(`[TaskService] Starting queue processing. Queue length: ${this.queue.length}, Running: ${this.runningCount}/${this.config.maxConcurrentTasks}, Processing: ${this.processing}`)
 
     // Tự động xử lý queue
     this.processQueue().catch((err) => {
       console.error('[TaskService] processQueue error:', err)
-      console.error('[TaskService] Error stack:', err instanceof Error ? err.stack : 'No stack')
     })
   }
 
@@ -152,11 +145,8 @@ export class TaskService {
    */
   private async processQueue(): Promise<void> {
     if (this.processing) {
-      console.log(`[TaskService] processQueue: Already processing, skipping. Queue: ${this.queue.length}, Running: ${this.runningCount}`)
       return
     }
-
-    console.log(`[TaskService] processQueue: Starting. Queue: ${this.queue.length}, Running: ${this.runningCount}, Max: ${this.config.maxConcurrentTasks}`)
     this.processing = true
 
     try {
@@ -166,14 +156,10 @@ export class TaskService {
       ) {
         const task = this.queue.shift()
         if (!task) {
-          console.log('[TaskService] processQueue: No task to shift, breaking')
           break
         }
-
-        console.log(`[TaskService] processQueue: Starting task ${task.id} (${task.type}) for account ${task.accountId}`)
         this.runningCount += 1
         this.runningTasks.set(task.id, task)
-        console.log(`[TaskService] processQueue: Running count now: ${this.runningCount}`)
 
         const startedAt = new Date()
 
@@ -208,12 +194,10 @@ export class TaskService {
               error: err instanceof Error ? err.message : String(err),
             })
             console.error(`[TaskService] Task ${task.id} error:`, err)
-            console.error('[TaskService] Error stack:', err instanceof Error ? err.stack : 'No stack')
           })
           .finally(() => {
             this.runningCount -= 1
             this.runningTasks.delete(task.id)
-            console.log(`[TaskService] Task ${task.id} finished. Running count now: ${this.runningCount}, Queue remaining: ${this.queue.length}`)
             
             // Cleanup old tasks periodically
             if (this.completedTasks.size > 2000) {
@@ -222,14 +206,11 @@ export class TaskService {
             
             // Khi 1 task xong, nếu còn task trong queue thì gọi tiếp processQueue
             if (this.queue.length > 0 && this.runningCount < this.config.maxConcurrentTasks) {
-              console.log(`[TaskService] Continuing queue processing. Queue: ${this.queue.length}, Running: ${this.runningCount}`)
-              this.processing = false // Reset để có thể gọi lại
+              this.processing = false
               this.processQueue().catch((err) => {
                 console.error('[TaskService] Recursive processQueue error:', err)
-                console.error('[TaskService] Error stack:', err instanceof Error ? err.stack : 'No stack')
               })
             } else {
-              console.log(`[TaskService] Queue processing finished. Queue: ${this.queue.length}, Running: ${this.runningCount}`)
               this.processing = false
             }
           })

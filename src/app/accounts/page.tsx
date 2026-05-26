@@ -149,31 +149,14 @@ export default function AccountsPage() {
 
   const fetchAccounts = useCallback(async () => {
     try {
-      // DEBUG: Log filter state
-      console.log('[Accounts Page] fetchAccounts called with filters:', {
-        statusFilter,
-        typeFilter,
-        searchQuery,
-      })
-
       const params = new URLSearchParams()
       if (statusFilter) params.append('status', statusFilter)
       if (typeFilter) params.append('type', typeFilter)
       if (searchQuery) params.append('search', searchQuery)
 
-      // DEBUG: Log API URL
       const apiUrl = `/api/accounts?${params.toString()}`
-      console.log('[Accounts Page] Fetching from:', apiUrl)
-
       const res = await fetch(apiUrl)
       const data = await res.json()
-
-      // DEBUG: Log response
-      console.log('[Accounts Page] API response:', {
-        success: data.success,
-        accountCount: data.accounts?.length || 0,
-        firstAccount: data.accounts?.[0],
-      })
 
       if (data.success) {
         setAllAccounts(data.accounts || [])
@@ -927,7 +910,6 @@ export default function AccountsPage() {
                 setStatusFilter('')
                 setTypeFilter('')
                 setProfileFilter('')
-                // BUG-7 FIX: reset về trang 1 sau khi clear filters
                 setCurrentPage(1)
               }}
               className="px-3 py-2 text-xs font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors self-end mb-1 border border-gray-300"

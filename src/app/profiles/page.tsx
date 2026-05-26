@@ -24,6 +24,7 @@ interface Profile {
   browserProvider: string | null
   remoteDebuggingPort?: number | null
   proxy: { id: string; label: string; rawProxy: string } | null
+  connection?: { id: string; name: string; apiUrl: string; providerType: string } | null
   _count?: { accounts: number }
 }
 
@@ -114,8 +115,6 @@ export default function ProfilesPage() {
     }
   }
 
-  // BUG-1 FIX: bọc fetchProfiles trong useCallback với đúng dependencies
-  // Tránh stale closure - đảm bảo filter values mới nhất được gửi lên API
   const fetchProfiles = useCallback(async () => {
     try {
       const params = new URLSearchParams()
@@ -127,9 +126,6 @@ export default function ProfilesPage() {
       if (filters.browserConnectionId) params.append('browserConnectionId', filters.browserConnectionId)
 
       const url = `/api/profiles${params.toString() ? `?${params.toString()}` : ''}`
-
-      // DEBUG: Log API URL
-      console.log('[Profiles Page] Fetching from:', url)
 
       const res = await fetch(url)
       const data = await res.json()

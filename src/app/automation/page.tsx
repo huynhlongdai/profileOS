@@ -202,7 +202,7 @@ export default function AutomationPage() {
                                     <ol className="list-decimal list-inside space-y-1 text-sm text-red-800">
                                         <li>Go to the Profiles page</li>
                                         <li>Select a profile you want to use</li>
-                                        <li>Click the "Start" button to launch the browser</li>
+                                        <li>Click the &quot;Start&quot; button to launch the browser</li>
                                         <li>Return to this page to start recording</li>
                                     </ol>
                                 </div>

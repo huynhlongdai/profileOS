@@ -424,16 +424,6 @@ export class ProfileService {
     accountType?: string
     browserConnectionId?: string
   }): Promise<Profile[]> {
-    // DEBUG: Log filter parameters
-    console.log('[ProfileService.listProfiles] Filter parameters:', {
-      status: filter?.status,
-      search: filter?.search,
-      groupId: filter?.groupId,
-      browserType: filter?.browserType,
-      accountType: filter?.accountType,
-      browserConnectionId: filter?.browserConnectionId,
-    })
-
     const where: Prisma.ProfileWhereInput = {}
 
     // Build base filters (these are AND conditions)
@@ -516,9 +506,6 @@ export class ProfileService {
       // No search, just use base conditions
       Object.assign(where, baseConditions)
     }
-
-    // DEBUG: Log final WHERE condition
-    console.log('[ProfileService.listProfiles] Final WHERE condition:', JSON.stringify(where, null, 2))
 
     return prisma.profile.findMany({
       where,

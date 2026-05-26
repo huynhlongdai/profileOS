@@ -1,4 +1,3 @@
-import fetch from 'node-fetch'
 import { prisma } from '@/lib/prisma'
 import { LogService } from './LogService'
 

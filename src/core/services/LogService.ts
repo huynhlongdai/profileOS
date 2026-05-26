@@ -1,4 +1,5 @@
 import type { Log, Prisma } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { logEmitter } from '@/lib/log-emitter'
 
 export class LogService {

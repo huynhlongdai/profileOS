@@ -162,7 +162,7 @@ export default function ProfileExtensionsModal({
           {profileExtensions.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <p>No extensions added yet.</p>
-              <p className="text-sm mt-2">Click "Add Extension" to add one.</p>
+              <p className="text-sm mt-2">Click &quot;Add Extension&quot; to add one.</p>
             </div>
           ) : (
             <div className="space-y-2">
