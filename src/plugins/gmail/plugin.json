@@ -1,0 +1,8 @@
+{
+  "name": "gmail",
+  "version": "1.0.0",
+  "description": "Gmail automation module (check, login, care)",
+  "entry": "gmail_module.ts",
+  "enabled": true
+}
+

@@ -1,0 +1,485 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  label             String
+  accountType       String // 'gmail' | 'outlook' | 'facebook' | 'x' | 'custom' | 'coingecko'
+  identifier        String
+  passwordEncrypted String?
+  twoFactorSecret   String? // TOTP secret key for 2FA code generation
+  gpmloginProfileId String?
+  proxyId           String?
+
+  // Login method and account linking
+  // loginMethod: 'PASSWORD' | 'GOOGLE_OAUTH'
+  loginMethod      String    @default("PASSWORD") // 'PASSWORD' | 'GOOGLE_OAUTH'
+  authViaAccountId String? // If this account authenticates via another account (e.g., Google OAuth via a Gmail account)
+  authViaAccount   Account?  @relation("AccountAuthVia", fields: [authViaAccountId], references: [id], onDelete: SetNull)
+  authChildren     Account[] @relation("AccountAuthVia")
+
+  status          String  @default("active") // 'active' | 'logged_out' | 'error' | 'banned' | 'proxy_error'
+  autoChangeProxy Boolean @default(false)
+
+  lastCheck DateTime?
+  lastLogin DateTime?
+  lastCare  DateTime?
+
+  // CoinGecko Candy tracking (optional)
+  lastCandyClaim  DateTime? // Last time candy was claimed
+  lastCandyAmount Int? // Total candy after last claim
+
+  cookiesJson String? // JSON string of cookies
+
+  notes String?
+  customLoginUrl String? // Manual startup URL for this specific account
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  proxy          Proxy?                 @relation(fields: [proxyId], references: [id], onDelete: SetNull)
+  profile        Profile?               @relation(fields: [gpmloginProfileId], references: [id], onDelete: SetNull)
+  logs           Log[]
+  moduleStatuses ModuleStatus[]
+  changeHistory  AccountChangeHistory[]
+  AccountType    AccountType?           @relation(fields: [accountTypeId], references: [id])
+  accountTypeId  String?
+
+  @@index([accountType])
+  @@index([status])
+  @@index([gpmloginProfileId])
+  @@index([proxyId])
+}
+
+model Proxy {
+  id             String    @id @default(cuid())
+  label          String
+  rawProxy       String
+  proxyServerUrl String? // Proxy API Server URL (e.g., http://192.168.1.41)
+  ipBefore       String?
+  ipAfter        String?
+  status         String    @default("active") // 'active' | 'dead' | 'checking' | 'error'
+  lastCheck      DateTime?
+  lastReset      DateTime?
+
+  accounts Account[]
+  profiles Profile[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model Profile {
+  id                  String  @id @default(cuid())
+  name                String
+  profileUid          String  @unique
+  proxyId             String?
+  groupId             Int? // Group ID from GPMLogin
+  status              String  @default("idle") // 'idle' | 'starting' | 'running' | 'stopping' | 'error'
+  remoteDebuggingPort Int?
+  processId           Int? // Process ID của browser process (cho Chrome/Firefox)
+  autoResetIp         Boolean @default(false) // Tự động reset IP proxy trước khi mở profile
+  browserType         String? // Browser type: 'chromium' | 'firefox' | 'gpm' (deprecated, dùng browserProvider)
+  browserProvider     String  @default("gpmlogin") // Browser provider: 'gpmlogin' | 'chrome' | 'firefox'
+  browserConnectionId String? // ID của connection (cho GPMLogin)
+  profilePath         String? // Đường dẫn đến profile folder (cho Chrome/Firefox)
+  executablePath      String? // Đường dẫn đến browser executable (tùy chọn, dùng default nếu null)
+
+  lastOpened DateTime?
+  lastClosed DateTime?
+
+  proxy         Proxy?                 @relation(fields: [proxyId], references: [id], onDelete: SetNull)
+  connection    BrowserConnection?     @relation(fields: [browserConnectionId], references: [id], onDelete: SetNull)
+  accounts      Account[]
+  changeHistory ProfileChangeHistory[]
+  extensions    ProfileExtension[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileUid])
+  @@index([status])
+  @@index([proxyId])
+  @@index([groupId])
+  @@index([browserType])
+  @@index([browserProvider])
+  @@index([browserConnectionId])
+}
+
+model BrowserConnection {
+  id           String   @id @default(cuid())
+  name         String
+  apiUrl       String   @default("http://127.0.0.1:19995")
+  apiVersion   String   @default("v3")
+  providerType String   @default("gpmlogin") // 'gpmlogin', 'ads_power', etc.
+  description  String?
+  isEnabled    Boolean  @default(true)
+  isDefault    Boolean  @default(false)
+
+  profiles Profile[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([providerType])
+  @@index([isEnabled])
+}
+
+model Extension {
+  id          String  @id @default(cuid())
+  name        String
+  extensionId String  @unique // Chrome Web Store extension ID or extension name
+  storeUrl    String  // Full URL to Chrome Web Store or extension store
+  icon        String? // Extension icon URL
+  description String?
+  version     String?
+  enabled     Boolean @default(true)
+
+  profiles ProfileExtension[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([extensionId])
+  @@index([enabled])
+}
+
+model ProfileExtension {
+  id          String  @id @default(cuid())
+  profileId   String
+  extensionId String
+  installed   Boolean @default(false) // Whether extension is actually installed
+  installedAt DateTime?
+
+  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  extension Extension @relation(fields: [extensionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([profileId, extensionId])
+  @@index([profileId])
+  @@index([extensionId])
+  @@index([installed])
+}
+
+model AccountType {
+  id          String  @id @default(cuid())
+  name        String  @unique // 'gmail', 'coingecko', 'outlook', etc.
+  label       String // Display name: 'Gmail', 'CoinGecko', etc.
+  description String? // Optional description
+  icon        String? // Optional icon emoji or icon name
+  loginUrl    String? // Auto-open this URL when starting profile
+  isSystem    Boolean @default(false) // System types cannot be deleted
+  isActive    Boolean @default(true) // Can be disabled without deleting
+  sortOrder   Int     @default(0) // For ordering in dropdowns
+
+  accounts Account[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model Log {
+  id        String  @id @default(cuid())
+  accountId String?
+  module    String // 'core' | 'gmail' | 'outlook' | ...
+  type      String // 'info' | 'warning' | 'error'
+  message   String
+  metaJson  String? // JSON string
+
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
+  @@index([module])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model ModuleStatus {
+  id         String    @id @default(cuid())
+  accountId  String
+  module     String // 'gmail', 'outlook', ...
+  status     String    @default("idle") // 'idle' | 'running' | 'error' | 'disabled'
+  lastRun    DateTime?
+  detailJson String? // JSON string
+
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, module])
+  @@index([accountId])
+  @@index([module])
+  @@index([status])
+}
+
+model ModuleConfig {
+  id         String   @id @default(cuid())
+  name       String   @unique // 'gmail', 'outlook', ...
+  enabled    Boolean  @default(true)
+  configJson String? // lưu config riêng nếu cần
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model AppConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  valueJson String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ModuleSchedule {
+  id         String @id @default(cuid())
+  moduleName String // 'gmail', 'outlook', ...
+  type       String // 'check' | 'care'
+
+  // Schedule type: 'interval' | 'daily' | 'weekly'
+  scheduleType String @default("interval") // 'interval' | 'daily' | 'weekly'
+
+  // For interval type
+  intervalMin Int? // mỗi bao nhiêu phút thì chạy (cho interval type)
+
+  // For daily/weekly types
+  hour   Int? // Giờ (0-23)
+  minute Int? // Phút (0-59)
+
+  // For weekly type
+  daysOfWeek String? // JSON array: [0,1,2,3,4,5,6] (0=Sunday, 6=Saturday)
+
+  // Account selection: null = all accounts, JSON array = specific account IDs
+  accountIds String? // JSON array: ["id1", "id2", ...] - null hoặc empty = tất cả accounts
+
+  // Profile selection: null = all accounts of module, profileId = only accounts of this profile
+  profileId String? // Profile ID - null = tất cả accounts của module
+
+  enabled   Boolean   @default(true)
+  lastRunAt DateTime?
+  nextRunAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  runs SchedulerRun[]
+
+  @@index([moduleName])
+  @@index([enabled])
+  @@index([nextRunAt])
+}
+
+model SchedulerRun {
+  id         String         @id @default(cuid())
+  scheduleId String
+  schedule   ModuleSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  status            String  @default("running") // 'running' | 'completed' | 'failed' | 'skipped'
+  accountsEnqueued  Int     @default(0) // Số accounts được enqueue
+  accountsProcessed Int? // Số accounts đã xử lý (chỉ có khi completed)
+  errorMessage      String? // Lỗi nếu có
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  durationMs  Int? // Thời gian chạy (milliseconds)
+
+  metaJson String? // JSON string cho thông tin bổ sung
+
+  createdAt DateTime @default(now())
+
+  @@index([scheduleId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model ActionRecording {
+  id          String  @id @default(cuid())
+  name        String // Tên recording (e.g., "Gmail Login Flow")
+  description String? // Mô tả
+  accountType String? // Loại account liên quan (optional)
+  url         String? // URL bắt đầu (optional)
+
+  // Metadata
+  version String  @default("1.0.0")
+  author  String?
+  tags    String? // JSON array: ["login", "gmail", ...]
+
+  // Recording data
+  actionsJson String // JSON string chứa array các actions
+
+  // Statistics
+  actionCount Int  @default(0)
+  durationMs  Int? // Thời gian recording (milliseconds)
+
+  // Status
+  status String @default("draft") // 'draft' | 'published' | 'archived'
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  runs ActionRecordingRun[]
+
+  @@index([accountType])
+  @@index([status])
+  @@index([name])
+}
+
+model ActionRecordingRun {
+  id          String          @id @default(cuid())
+  recordingId String
+  recording   ActionRecording @relation(fields: [recordingId], references: [id], onDelete: Cascade)
+
+  accountId String? // Account được sử dụng để replay
+  profileId String? // Profile được sử dụng
+
+  status String @default("running") // 'running' | 'completed' | 'failed' | 'paused'
+
+  // Progress tracking
+  currentActionIndex Int @default(0) // Action đang thực hiện
+  totalActions       Int @default(0)
+  successfulActions  Int @default(0)
+  failedActions      Int @default(0)
+
+  errorMessage String? // Lỗi nếu có
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  durationMs  Int? // Thời gian chạy (milliseconds)
+
+  logsJson String? // JSON array của logs trong quá trình replay
+
+  createdAt DateTime @default(now())
+
+  @@index([recordingId])
+  @@index([accountId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model AccountChangeHistory {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // Change information
+  changeType String // 'password' | 'identifier' | 'profile' | 'proxy' | 'status' | 'notes' | '2fa' | 'login_method' | 'other'
+  fieldName  String? // Tên field bị thay đổi (e.g., 'password', 'identifier', 'gpmloginProfileId')
+  oldValue   String? // Giá trị cũ (có thể là JSON string cho complex values)
+  newValue   String? // Giá trị mới (có thể là JSON string cho complex values)
+
+  // Metadata
+  description String? // Mô tả thay đổi (e.g., "Password changed", "Profile reassigned")
+  changedBy   String? // Người/system thực hiện thay đổi (optional, có thể là user ID hoặc 'system')
+
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
+  @@index([changeType])
+  @@index([createdAt])
+}
+
+model ProfileChangeHistory {
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  // Change information
+  changeType String // 'name' | 'proxy' | 'status' | 'group' | 'auto_reset_ip' | 'other'
+  fieldName  String? // Tên field bị thay đổi (e.g., 'name', 'proxyId', 'status')
+  oldValue   String? // Giá trị cũ (có thể là JSON string cho complex values)
+  newValue   String? // Giá trị mới (có thể là JSON string cho complex values)
+
+  // Metadata
+  description String? // Mô tả thay đổi (e.g., "Proxy changed", "Status updated")
+  changedBy   String? // Người/system thực hiện thay đổi (optional, có thể là user ID hoặc 'system')
+
+  createdAt DateTime @default(now())
+
+  @@index([profileId])
+  @@index([changeType])
+  @@index([createdAt])
+}
+
+// Automation Templates
+model AutomationTemplate {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  category    String // 'social-media', 'e-commerce', 'data-entry', 'testing', 'other'
+  icon        String? // Icon emoji or name
+
+  // Template content
+  actionsJson String // JSON array of automation blocks/actions
+  variablesJson String? // JSON array of template variables definition
+  configJson  String? // Additional configuration
+
+  // Metadata
+  isPublic    Boolean @default(false) // Can be shared publicly
+  isOfficial  Boolean @default(false) // Official template by admin
+  createdBy   String? // User ID who created it
+
+  // Stats
+  usageCount Int   @default(0)
+  rating     Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  executions AutomationExecution[]
+
+  @@index([category])
+  @@index([isPublic])
+  @@index([createdBy])
+  @@index([name])
+}
+
+// Automation Execution (Job)
+model AutomationExecution {
+  id         String  @id @default(cuid())
+  templateId String?
+  profileId  String
+
+  // Execution details
+  status      String @default("pending") // 'pending', 'running', 'completed', 'failed', 'cancelled'
+  actionsJson String // Snapshot of actions to execute
+  variablesJson String? // Variable values for this execution
+
+  // Results
+  resultJson String? // Execution result data
+  error      String? // Error message if failed
+  logsJson   String? // Execution logs
+
+  // Timing
+  startedAt   DateTime?
+  completedAt DateTime?
+  duration    Int? // Duration in milliseconds
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  template AutomationTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([profileId])
+  @@index([templateId])
+  @@index([status])
+  @@index([createdAt])
+}
+

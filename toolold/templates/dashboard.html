@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail Manager Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>
+                    <span>📧 Gmail Manager Dashboard</span>
+                    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">☰</button>
+                </h1>
+                <div class="header-actions" id="headerActions">
+                    <button class="btn btn-primary" onclick="refreshData()">🔄 Làm mới</button>
+                    <button class="btn btn-info" onclick="showProxyManager()">🔗 Quản lý Proxy</button>
+                    <button class="btn btn-warning" onclick="showProfileManager()">📁 Quản lý Profiles</button>
+                    <button class="btn btn-secondary" onclick="showTrashManager()">🗑️ Thùng rác</button>
+                    <button class="btn btn-primary" onclick="showAccountManager()">👥 Quản lý Tài khoản</button>
+                </div>
+            </div>
+            <div class="last-update" id="lastUpdate">Chưa tải dữ liệu</div>
+        </header>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <h3>Tổng số</h3>
+                    <div class="stat-value" id="statTotal">-</div>
+                </div>
+            </div>
+            <div class="stat-card active">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <h3>Hoạt động</h3>
+                    <div class="stat-value" id="statActive">-</div>
+                </div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-content">
+                    <h3>Đã đăng xuất</h3>
+                    <div class="stat-value" id="statLoggedOut">-</div>
+                </div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-icon">❌</div>
+                <div class="stat-content">
+                    <h3>Lỗi</h3>
+                    <div class="stat-value" id="statErrors">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accounts Table -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Danh sách tài khoản</h2>
+                <div class="table-actions">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <span>Số luồng:</span>
+                            <input type="number" id="maxThreads" min="1" max="10" value="3" style="width: 60px; padding: 5px;">
+                        </label>
+                        <button class="btn btn-sm btn-primary" onclick="checkAllAccounts()">Kiểm tra tất cả</button>
+                        <button class="btn btn-sm btn-info" onclick="careSelectedAccounts()">Chăm sóc đã chọn</button>
+                        <button class="btn btn-sm btn-danger" id="stopTaskBtn" onclick="stopCurrentTask()" style="display: none;">⏹️ Dừng</button>
+                    </div>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="accountsTable">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Trạng thái</th>
+                            <th>Profile ID</th>
+                            <th>Proxy</th>
+                            <th>Kiểm tra cuối</th>
+                            <th>Đăng nhập cuối</th>
+                            <th>Chăm sóc cuối</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accountsTableBody">
+                        <tr>
+                            <td colspan="10" class="loading">Đang tải...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Account Modal -->
+    <div id="addAccountModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Thêm tài khoản mới</h2>
+                <span class="close" onclick="closeAddAccountModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="addAccountForm" onsubmit="addAccount(event)">
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="accountEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="accountPassword">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="autoCreateProfile" checked onchange="toggleAutoCreate()">
+                            Tự động tạo GPMLogin Profile
+                        </label>
+                    </div>
+                    <div id="profileSection" style="display: none;">
+                        <div class="form-group">
+                            <label>GPMLogin Profile ID</label>
+                            <div class="input-group">
+                                <input type="text" id="accountProfileId">
+                                <button type="button" class="btn btn-sm" onclick="loadGPMLoginProfiles()">Lấy danh sách</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="autoAssignProxy" checked onchange="toggleAutoProxy()">
+                            Tự động gán Proxy
+                        </label>
+                    </div>
+                    <div id="proxySection" style="display: none;">
+                        <div class="form-group">
+                            <label>Proxy</label>
+                            <div class="input-group">
+                                <input type="text" id="accountProxy" placeholder="ip:port hoặc ip:port:user:pass">
+                                <button type="button" class="btn btn-sm" onclick="loadProxies()">Chọn từ thư viện</button>
+                            </div>
+                            <small style="color: #666;">Format: ip:port hoặc ip:port:username:password</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Proxy API Server URL</label>
+                            <input type="text" id="accountProxyApiUrl" placeholder="http://192.168.1.41 (để trống dùng từ config)">
+                            <small style="color: #666;">URL của proxy API server để check status và reset IP</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="autoChangeProxy">
+                            Tự động change proxy IP khi mở profile
+                        </label>
+                        <small style="color: #666; display: block; margin-top: 5px;">Tự động reset IP proxy trước khi mở profile (chỉ áp dụng khi có proxy)</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Ghi chú</label>
+                        <textarea id="accountNotes" rows="3"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeAddAccountModal()">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Thêm tài khoản</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Account Proxy Modal -->
+    <div id="changeAccountProxyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Đổi Proxy cho tài khoản</h2>
+                <span class="close" onclick="closeChangeAccountProxyModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Chọn Proxy</label>
+                    <div class="input-group">
+                        <input type="text" id="changeAccountProxyInput" placeholder="ip:port hoặc ip:port:user:pass">
+                        <button type="button" class="btn btn-sm" onclick="loadProxiesForAccount()">Chọn từ thư viện</button>
+                    </div>
+                    <small style="color: #666;">Format: ip:port hoặc ip:port:username:password</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeChangeAccountProxyModal()">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="updateAccountProxy()">Cập nhật Proxy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Profile Proxy Modal -->
+    <div id="changeProfileProxyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Đổi Proxy cho Profile</h2>
+                <span class="close" onclick="closeChangeProfileProxyModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Profile ID</label>
+                    <input type="text" id="changeProfileProxyProfileId" readonly class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Chọn Proxy</label>
+                    <div class="input-group">
+                        <input type="text" id="changeProfileProxyInput" placeholder="ip:port hoặc ip:port:user:pass">
+                        <button type="button" class="btn btn-sm" onclick="loadProxiesForProfile()">Chọn từ thư viện</button>
+                    </div>
+                    <small style="color: #666;">Format: ip:port hoặc ip:port:username:password. Để trống để xóa proxy.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeChangeProfileProxyModal()">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="updateProfileProxy()">Cập nhật Proxy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GPMLogin Profiles Modal -->
+    <div id="profilesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Chọn GPMLogin Profile</h2>
+                <span class="close" onclick="closeProfilesModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="table-container">
+                    <table id="profilesTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên</th>
+                                <th>Browser</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profilesTableBody">
+                            <tr><td colspan="4" class="loading">Đang tải...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Modal -->
+    <div id="logsModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Logs</h2>
+                <span class="close" onclick="closeLogsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="logs-container" id="logsContainer">
+                    <div class="loading">Đang tải logs...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Manager Modal -->
+    <div id="profileManagerModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>📁 Quản lý GPMLogin Profiles</h2>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn btn-success" onclick="showAddAccountModalFromProfileManager()" style="font-size: 14px; padding: 8px 15px;">➕ Thêm tài khoản</button>
+                    <span class="close" onclick="closeProfileManager()">&times;</span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Danh sách Profiles (<span id="profileCount">0</span>)</h3>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button class="btn btn-sm btn-success" onclick="openSelectedProfiles()" id="openSelectedProfilesBtn" style="display: none;">▶️ Mở các profile đã chọn (<span id="selectedProfilesCount">0</span>)</button>
+                            <button class="btn btn-sm btn-primary" onclick="refreshProfiles()">🔄 Làm mới</button>
+                        </div>
+                    </div>
+                    <!-- Bộ lọc và tìm kiếm -->
+                    <div style="padding: 15px; background: #f5f5f5; border-radius: 4px; margin-bottom: 15px;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <input type="text" id="profileSearchInput" placeholder="🔍 Tìm kiếm theo ID, tên..." 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                                       onkeyup="filterProfiles()">
+                            </div>
+                            <div>
+                                <select id="profileStatusFilter" onchange="filterProfiles()" 
+                                        style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="active">🟢 Đang mở</option>
+                                    <option value="inactive">⚪ Đã đóng</option>
+                                </select>
+                            </div>
+                            <div>
+                                <select id="profileBrowserFilter" onchange="filterProfiles()" 
+                                        style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                    <option value="">Tất cả browser</option>
+                                    <option value="Chrome">Chrome</option>
+                                    <option value="Firefox">Firefox</option>
+                                    <option value="Edge">Edge</option>
+                                </select>
+                            </div>
+                            <div>
+                                <select id="profileProxyFilter" onchange="filterProfiles()" 
+                                        style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                    <option value="">Tất cả proxy</option>
+                                    <option value="yes">Có proxy</option>
+                                    <option value="no">Không có proxy</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-sm btn-secondary" onclick="resetProfileFilters()">🔄 Reset</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="profilesManagerTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">
+                                        <input type="checkbox" id="selectAllProfiles" onchange="toggleSelectAllProfiles()" title="Chọn tất cả">
+                                    </th>
+                                    <th>ID</th>
+                                    <th>Tên</th>
+                                    <th>Browser</th>
+                                    <th>Proxy</th>
+                                    <th>Auto Change IP</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="profilesManagerTableBody">
+                                <tr>
+                                    <td colspan="9" class="loading">Đang tải...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Login Modal -->
+    <div id="manualLoginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔐 Đăng nhập thủ công</h2>
+                <span class="close" onclick="closeManualLoginModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="manualLoginForm" onsubmit="submitManualLogin(event)">
+                    <div class="form-group">
+                        <label>Profile ID</label>
+                        <input type="text" id="manualLoginProfileId" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="manualLoginEmail" required class="form-control" placeholder="email@gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" id="manualLoginPassword" required class="form-control" placeholder="Nhập password">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="manualLoginHumanLike" checked>
+                            Sử dụng hành vi giống người
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeManualLoginModal()">Hủy</button>
+                        <button type="submit" class="btn btn-primary">🔐 Đăng nhập</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trash Manager Modal -->
+    <div id="trashManagerModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🗑️ Thùng rác - Profiles đã xóa</h2>
+                <span class="close" onclick="closeTrashManager()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Profiles đã xóa (<span id="trashCount">0</span>)</h3>
+                        <button class="btn btn-sm btn-primary" onclick="refreshTrash()">🔄 Làm mới</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="trashTable">
+                            <thead>
+                                <tr>
+                                    <th>Profile ID</th>
+                                    <th>Tên</th>
+                                    <th>Email</th>
+                                    <th>Ngày xóa</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trashTableBody">
+                                <tr>
+                                    <td colspan="5" class="loading">Đang tải...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Proxy Modal -->
+    <div id="addProxyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ Thêm Proxy</h2>
+                <span class="close" onclick="closeAddProxyModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="addProxyForm" onsubmit="addProxies(event)">
+                    <div class="form-group">
+                        <label>Danh sách Proxy *</label>
+                        <textarea id="addProxyList" rows="10" placeholder="Nhập danh sách proxy, mỗi proxy một dòng&#10;Ví dụ:&#10;192.168.1.1:8080&#10;192.168.1.2:8080:user:pass&#10;proxy.hoanong.com:4001" required></textarea>
+                        <small style="color: #666;">Format: ip:port hoặc ip:port:username:password. Mỗi proxy một dòng.</small>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeAddProxyModal()">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Thêm Proxy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proxy Manager Modal -->
+    <div id="proxyManagerModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🔗 Quản lý Proxy</h2>
+                <span class="close" onclick="closeProxyManager()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Danh sách Proxy (<span id="proxyCount">0</span>)</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-sm btn-success" onclick="showAddProxyModal()">➕ Thêm Proxy</button>
+                            <button class="btn btn-sm btn-primary" onclick="refreshProxies()">🔄 Làm mới</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="proxiesTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Proxy</th>
+                                    <th>Type</th>
+                                    <th>Host:Port</th>
+                                    <th>Trạng thái sử dụng</th>
+                                    <th>Trạng thái proxy</th>
+                                    <th>IP Proxy</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="proxiesTableBody">
+                                <tr>
+                                    <td colspan="8" class="loading">Đang tải...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Proxy Modal -->
+    <div id="editProxyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Chỉnh sửa Proxy</h2>
+                <span class="close" onclick="closeEditProxyModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editProxyForm" onsubmit="updateProxy(event)">
+                    <input type="hidden" id="editProxyId">
+                    <div class="form-group">
+                        <label>Proxy *</label>
+                        <input type="text" id="editProxyInput" placeholder="ip:port hoặc ip:port:user:pass" required>
+                        <small style="color: #666;">Format: ip:port hoặc ip:port:username:password</small>
+                    </div>
+                    <div class="form-group">
+                        <label>URL Change IP</label>
+                        <input type="text" id="editProxyApiUrl" placeholder="http://192.168.1.41/reset?proxy=proxy.hoanong.com:4001">
+                        <small style="color: #666;">URL đầy đủ để change IP proxy. Ví dụ: http://192.168.1.41/reset?proxy=proxy.hoanong.com:4001</small>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeEditProxyModal()">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Manager Modal -->
+    <div id="accountManagerModal" class="modal">
+        <div class="modal-content" style="max-width: 1200px;">
+            <div class="modal-header">
+                <h2>👥 Quản lý Tài khoản</h2>
+                <span class="close" onclick="closeAccountManagerModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="exportAccounts('json')">📥 Export JSON</button>
+                    <button class="btn btn-primary" onclick="exportAccounts('csv')">📥 Export CSV</button>
+                    <button class="btn btn-info" onclick="copyAllEmails()">📋 Copy tất cả Email</button>
+                    <button class="btn btn-info" onclick="copyAllPasswords()">🔑 Copy tất cả Password</button>
+                    <button class="btn btn-warning" onclick="copyAllCookies()">🍪 Copy tất cả Cookies</button>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <input type="text" id="accountManagerSearch" placeholder="🔍 Tìm kiếm..." 
+                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                           onkeyup="filterAccountManager()">
+                </div>
+                <div style="max-height: 500px; overflow-y: auto;">
+                    <table class="table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email</th>
+                                <th>Password</th>
+                                <th>Profile ID</th>
+                                <th>Proxy</th>
+                                <th>Status</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountManagerTableBody">
+                            <tr><td colspan="7" class="loading">Đang tải...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Account Modal -->
+    <div id="editAccountModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Chỉnh sửa tài khoản</h2>
+                <span class="close" onclick="closeEditAccountModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editAccountForm" onsubmit="updateAccount(event)">
+                    <input type="hidden" id="editAccountId">
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <div class="input-group">
+                            <input type="email" id="editAccountEmail" required>
+                            <button type="button" class="btn btn-sm" onclick="copyToClipboard(document.getElementById('editAccountEmail').value, 'Email')" title="Copy email">
+                                📋 Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-group">
+                            <input type="password" id="editAccountPassword">
+                            <button type="button" class="btn btn-sm" onclick="copyToClipboard(document.getElementById('editAccountPassword').value, 'Password')" title="Copy password">
+                                📋 Copy
+                            </button>
+                            <button type="button" class="btn btn-sm" onclick="togglePasswordVisibility('editAccountPassword')" title="Hiện/Ẩn password">
+                                👁️
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Code 2FA</label>
+                        <input type="text" id="editAccount2FA" placeholder="Nhập mã 2FA nếu có">
+                    </div>
+                    <div class="form-group" id="editAccountProxySection">
+                        <label>Chọn Proxy</label>
+                        <div style="margin-bottom: 10px;">
+                            <select id="editAccountProxySelect" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
+                                <option value="">Đang tải danh sách proxy...</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <input type="text" id="editAccountProxyCustom" class="form-control" placeholder="Hoặc nhập proxy mới: ip:port hoặc ip:port:user:pass" style="display: none; margin-top: 5px;">
+                        </div>
+                        <div style="background: #f5f5f5; padding: 12px; border-radius: 5px; margin-top: 10px;" id="editAccountProxyInfoSection" style="display: none;">
+                            <div style="margin-bottom: 10px;">
+                                <strong>Proxy:</strong> <span id="editAccountProxyDisplay">-</span>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <strong>Trạng thái:</strong> <span id="editAccountProxyStatusDisplay">
+                                    <span class="status-badge status-inactive">Chưa kiểm tra</span>
+                                </span>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <strong>IP Proxy:</strong> <span id="editAccountProxyIpDisplay" style="color: #666;">-</span>
+                            </div>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-sm btn-info" onclick="checkAccountProxy()">
+                                    🔍 Check Proxy
+                                </button>
+                                <button type="button" class="btn btn-sm btn-warning" onclick="changeAccountProxyIP()">
+                                    🔄 Change IP
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="editAccountAutoChangeProxy">
+                            Tự động change proxy IP khi mở profile
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Ghi chú</label>
+                        <textarea id="editAccountNotes" rows="3"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeEditAccountModal()">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard_account_manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard_proxy_functions.js') }}"></script>
+</body>
+</html>
+

@@ -1,0 +1,19 @@
+{
+  "name": "gmail-monitor-api",
+  "version": "1.0.0",
+  "description": "API server để theo dõi tình trạng Gmail accounts",
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy",
+    "start": "node api/index.js"
+  },
+  "dependencies": {
+    "@vercel/node": "^3.0.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}
+

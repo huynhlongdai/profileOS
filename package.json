@@ -1,0 +1,53 @@
+{
+  "name": "gpm-profile-manager",
+  "version": "1.0.0",
+  "description": "GPM Profile & Multi-Account Manager - Core + Plugin Architecture",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:3211": "next dev -p 3211",
+    "start": "next start",
+    "start:3211": "next start -p 3211",
+    "build": "next build",
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "server": "npm run dev:3211"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "@types/ws": "^8.18.1",
+    "bullmq": "^5.70.4",
+    "chrome-remote-interface": "^0.33.3",
+    "http-proxy-agent": "^7.0.2",
+    "https-proxy-agent": "^7.0.6",
+    "ioredis": "^5.10.0",
+    "lucide-react": "^0.562.0",
+    "next": "^14.0.4",
+    "otplib": "^12.0.1",
+    "playwright": "^1.57.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-is": "^19.2.4",
+    "recharts": "^3.8.1",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "socks-proxy-agent": "^10.0.0",
+    "undici": "^7.16.0",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/chrome-remote-interface": "^0.33.0",
+    "@types/node": "^20.10.5",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@types/socket.io-client": "^1.4.36",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "prisma": "^5.7.1",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3"
+  }
+}
