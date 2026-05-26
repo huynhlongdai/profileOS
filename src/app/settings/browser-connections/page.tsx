@@ -26,8 +26,10 @@ const EMPTY_FORM = {
 }
 
 const PROVIDER_OPTIONS = [
-  { value: 'gpmlogin', label: 'GPMLogin Local', presetUrl: 'http://127.0.0.1:19496', presetVersion: 'v3' },
+  { value: 'gpmlogin', label: 'GPMLogin Local', presetUrl: 'http://127.0.0.1:19995', presetVersion: 'v3' },
   { value: 'gpmlogin_global', label: 'GPMLogin Global', presetUrl: 'http://127.0.0.1:9495', presetVersion: 'v1' },
+  { value: 'chrome', label: 'Chrome', presetUrl: '', presetVersion: '' },
+  { value: 'firefox', label: 'Firefox', presetUrl: '', presetVersion: '' },
 ]
 
 const BUILTIN_IDS = ['local-gpm', 'global-gpm']
