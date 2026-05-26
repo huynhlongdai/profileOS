@@ -4,8 +4,8 @@
   "description": "GPM Profile & Multi-Account Manager - Core + Plugin Architecture",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "dev:3211": "next dev -p 3211",
+    "dev": "next dev --turbo",
+    "dev:3211": "next dev --turbo -p 3211",
     "start": "next start",
     "start:3211": "next start -p 3211",
     "build": "next build",
