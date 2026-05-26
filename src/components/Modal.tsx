@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { X } from 'lucide-react'
 
 interface ModalProps {
   isOpen: boolean
@@ -20,6 +21,14 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
     return () => { document.body.style.overflow = 'unset' }
   }, [isOpen])
 
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    if (isOpen) window.addEventListener('keydown', handleEsc)
+    return () => window.removeEventListener('keydown', handleEsc)
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   const maxWidth =
@@ -30,41 +39,44 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="flex min-h-screen items-end sm:items-center justify-center sm:p-4">
         {/* Backdrop */}
-        <div className="fixed inset-0 bg-black bg-opacity-70 transition-opacity" onClick={onClose} />
+        <div className="fixed inset-0 bg-black/60 transition-opacity" onClick={onClose} />
 
-        {/* Modal panel */}
+        {/* Modal panel — full-width bottom sheet on mobile, centered on desktop */}
         <div
-          className={`relative z-50 w-full transform rounded-xl shadow-2xl transition-all animate-fade-in ${maxWidth}`}
+          className={`relative z-50 w-full transform shadow-2xl transition-all animate-scale-in
+            rounded-t-2xl sm:rounded-xl ${maxWidth}
+            max-h-[90vh] sm:max-h-[85vh] flex flex-col`}
           style={{
             backgroundColor: 'var(--bg-surface)',
             border: '1px solid var(--border-color)',
           }}
         >
+          {/* Handle bar (mobile) */}
+          <div className="sm:hidden flex justify-center pt-2 pb-1">
+            <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border-color)' }} />
+          </div>
+
           {/* Header */}
           <div
-            className="flex items-center justify-between px-6 py-4"
+            className="flex items-center justify-between px-5 py-3 flex-shrink-0"
             style={{ borderBottom: '1px solid var(--border-color)' }}
           >
-            <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
               {title}
             </h3>
             <button
               onClick={onClose}
-              className="rounded-md p-1 transition-colors"
+              className="rounded-lg p-1.5 transition-colors hover:bg-white/5"
               style={{ color: 'var(--text-muted)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X size={16} />
             </button>
           </div>
 
           {/* Content */}
-          <div className="max-h-[80vh] overflow-y-auto px-6 py-4">{children}</div>
+          <div className="overflow-y-auto px-5 py-4 flex-1">{children}</div>
         </div>
       </div>
     </div>

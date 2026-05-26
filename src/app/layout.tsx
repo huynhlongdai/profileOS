@@ -1,15 +1,28 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import ToastProvider from '@/components/ToastProvider'
-import NavBar from '@/components/NavBar'
-import LogConsole from '@/components/LogConsole'
+import AppLayout from '@/components/layout/AppLayout'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'GPM Profile & Multi-Account Manager',
-  description: 'Core + Plugin Architecture',
+  title: 'ProfileOS',
+  description: 'Browser Profile & Multi-Account Manager',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'ProfileOS',
+  },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#0b0d14',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -17,13 +30,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="dark">
       <body className={inter.className} style={{ backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)' }}>
         <ToastProvider>
-          <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-page)' }}>
-            <NavBar />
-            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pb-32">
-              {children}
-            </main>
-            <LogConsole />
-          </div>
+          <AppLayout>
+            {children}
+          </AppLayout>
         </ToastProvider>
       </body>
     </html>
