@@ -463,18 +463,31 @@ function ProfilesContent() {
   }
 
   if (loading) {
-    return <div className="text-center py-12">Loading...</div>
+    return (
+      <div className="space-y-4">
+        <div className="h-8 w-48 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--bg-surface-2)' }} />
+        <div className="rounded-xl border p-4" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
+            {[...Array(5)].map((_, i) => <div key={i} className="h-9 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--bg-surface-2)' }} />)}
+          </div>
+        </div>
+        <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+          {[...Array(8)].map((_, i) => <div key={i} className="h-12 border-b animate-pulse" style={{ backgroundColor: i % 2 === 0 ? 'var(--bg-surface)' : 'var(--bg-surface-2)', borderColor: 'var(--border-color)' }} />)}
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="w-full px-4 sm:px-0">
       {/* Title and Action Buttons */}
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Profiles</h1>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Profiles</h1>
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={fetchProfiles}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+            style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)', border: '1px solid var(--border-color)' }}
             title="Làm mới danh sách"
           >
             🔄 Refresh
@@ -503,10 +516,10 @@ function ProfilesContent() {
                 showToast('Error fixing browser types', 'error')
               }
             }}
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm font-medium"
+            className="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs font-medium"
             title="Cập nhật browser type cho tất cả profiles thành GPM"
           >
-            🔧 Fix Browser Type
+            🔧 Fix Browser
           </button>
 
           {/* Sync Dropdown */}
@@ -514,7 +527,8 @@ function ProfilesContent() {
             <button
               onClick={() => setShowSyncMenu(!showSyncMenu)}
               disabled={!!syncing}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-3 py-1.5 text-white rounded-lg transition-colors text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              style={{ backgroundColor: 'var(--accent)' }}
             >
               {syncing ? (
                 <>
@@ -535,15 +549,15 @@ function ProfilesContent() {
                   className="fixed inset-0 z-10"
                   onClick={() => setShowSyncMenu(false)}
                 />
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-20 py-1">
+                <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg border z-20 py-1" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
                   <button
                     onClick={() => handleSync('', 'gpmlogin_global')}
-                    className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-purple-50 transition-colors border-b border-gray-100 group"
+                    className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-white/5 transition-colors border-b group" style={{ borderColor: 'var(--border-color)' }}
                   >
                     <span className="text-xl group-hover:scale-110 transition-transform">🌍</span>
                     <div className="flex flex-col">
-                      <span className="font-bold text-purple-700">Sync GPMLogin Global</span>
-                      <span className="text-[10px] text-purple-400">Port 9495 • API v1</span>
+                      <span className="font-bold" style={{ color: 'var(--accent)' }}>Sync GPMLogin Global</span>
+                      <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Port 9495 • API v1</span>
                     </div>
                   </button>
 
@@ -552,23 +566,23 @@ function ProfilesContent() {
                     <button
                       key={conn.id}
                       onClick={() => handleSync(conn.id)}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-2"
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 flex items-center gap-2"
                     >
                       <span>📡</span> Sync from {conn.name}
                     </button>
                   ))}
 
-                  <div className="border-t border-gray-100 my-1"></div>
+                  <div className="border-t my-1"></div>
 
                   <button
                     onClick={() => handleSync('', 'chromium')}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 flex items-center gap-2"
                   >
                     <span>🌐</span> Sync Chrome Only
                   </button>
                   <button
                     onClick={() => handleSync('', 'firefox')}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 flex items-center gap-2"
                   >
                     <span>🦊</span> Sync Firefox Only
                   </button>
@@ -579,7 +593,7 @@ function ProfilesContent() {
 
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-xs font-medium"
           >
             + Add Profile
           </button>
@@ -587,11 +601,11 @@ function ProfilesContent() {
       </div>
 
       {/* Controls */}
-      <div className="bg-white shadow rounded-lg p-4 mb-4">
+      <div className="rounded-xl border p-4 mb-4" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
         <div className="flex flex-col lg:flex-row gap-3 items-end lg:items-center">
           {/* Search Input */}
           <div className="flex-1 min-w-[200px] w-full lg:w-auto">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-400 mb-1">
               🔍 Tìm kiếm
             </label>
             <input
@@ -599,40 +613,40 @@ function ProfilesContent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm theo tên, UID, proxy..."
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
           {/* Status Filter */}
           <div className="w-full lg:w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-400 mb-1">
               📊 Trạng thái
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} data-dark="true"
             >
-              <option value="" className="text-gray-900">Tất cả</option>
-              <option value="idle" className="text-gray-900">Idle</option>
-              <option value="running" className="text-gray-900">Running</option>
-              <option value="starting" className="text-gray-900">Starting</option>
-              <option value="changing_proxy" className="text-gray-900">Changing Proxy...</option>
-              <option value="opening_browser" className="text-gray-900">Opening Browser...</option>
-              <option value="stopping" className="text-gray-900">Stopping</option>
-              <option value="error" className="text-gray-900">Error</option>
+              <option value="">Tất cả</option>
+              <option value="idle">Idle</option>
+              <option value="running">Running</option>
+              <option value="starting">Starting</option>
+              <option value="changing_proxy">Changing Proxy...</option>
+              <option value="opening_browser">Opening Browser...</option>
+              <option value="stopping">Stopping</option>
+              <option value="error">Error</option>
             </select>
           </div>
 
           {/* Connection Filter */}
           <div className="w-full lg:w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-400 mb-1">
               📡 Connection
             </label>
             <select
               value={filters.browserConnectionId}
               onChange={(e) => setFilters({ ...filters, browserConnectionId: e.target.value })}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} data-dark="true"
             >
               <option value="">Tất cả kết nối</option>
               {connections.map(conn => (
@@ -643,17 +657,17 @@ function ProfilesContent() {
 
           {/* Group Filter */}
           <div className="w-full lg:w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-400 mb-1">
               📁 Nhóm
             </label>
             <select
               value={groupFilter}
               onChange={(e) => setGroupFilter(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} data-dark="true"
             >
-              <option value="" className="text-gray-900">Tất cả nhóm</option>
+              <option value="">Tất cả nhóm</option>
               {groups.map((group) => (
-                <option key={group.id} value={group.id} className="text-gray-900">
+                <option key={group.id} value={group.id}>
                   {group.name}
                 </option>
               ))}
@@ -662,36 +676,36 @@ function ProfilesContent() {
 
           {/* Browser Type Filter */}
           <div className="w-full lg:w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-400 mb-1">
               🌐 Browser Type
             </label>
             <select
               value={filters.browserType}
               onChange={(e) => setFilters({ ...filters, browserType: e.target.value })}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} data-dark="true"
             >
-              <option value="" className="text-gray-900">Tất cả</option>
-              <option value="chromium" className="text-gray-900">Chromium (Chrome)</option>
-              <option value="firefox" className="text-gray-900">Firefox</option>
-              <option value="gpm" className="text-gray-900">GPM Browser</option>
+              <option value="">Tất cả</option>
+              <option value="chromium">Chromium (Chrome)</option>
+              <option value="firefox">Firefox</option>
+              <option value="gpm">GPM Browser</option>
             </select>
           </div>
 
           {/* Account Type Filter */}
           <div className="w-full lg:w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-400 mb-1">
               📧 Account Type
             </label>
             <select
               value={filters.accountType}
               onChange={(e) => setFilters({ ...filters, accountType: e.target.value })}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} data-dark="true"
             >
-              <option value="" className="text-gray-900">Tất cả</option>
+              <option value="">Tất cả</option>
               {accountTypes
                 .sort((a, b) => a.sortOrder - b.sortOrder || a.label.localeCompare(b.label))
                 .map((type) => (
-                  <option key={type.id} value={type.name} className="text-gray-900">
+                  <option key={type.id} value={type.name}>
                     {type.icon && `${type.icon} `}
                     {type.label}
                   </option>
@@ -700,8 +714,8 @@ function ProfilesContent() {
           </div>
 
           {/* Results Count */}
-          <div className="text-sm text-gray-600 whitespace-nowrap flex items-center gap-1">
-            <span className="font-semibold text-gray-900">{profiles.length}</span>
+          <div className="text-sm text-gray-400 whitespace-nowrap flex items-center gap-1">
+            <span className="font-semibold text-white">{profiles.length}</span>
             <span className="text-gray-400">/</span>
             <span>{allProfiles.length}</span>
             <span className="text-gray-400 ml-1">profiles</span>
@@ -722,7 +736,7 @@ function ProfilesContent() {
                   currentPage: 1
                 })
               }}
-              className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors border border-gray-300"
+              className="px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors border border-white/10"
             >
               ✕ Clear Filters
             </button>
@@ -732,8 +746,8 @@ function ProfilesContent() {
 
         {/* Bulk Actions */}
         {selectedIds.size > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-200 flex items-center gap-2">
-            <span className="text-sm text-gray-600">
+          <div className="mt-3 pt-3 border-t flex items-center gap-2">
+            <span className="text-sm text-gray-400">
               {selectedIds.size} profile(s) selected
             </span>
             <button
@@ -752,7 +766,7 @@ function ProfilesContent() {
             </button>
             <button
               onClick={() => setSelectedIds(new Set())}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              className="px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"
             >
               Clear Selection
             </button>
@@ -761,58 +775,58 @@ function ProfilesContent() {
       </div>
 
       {/* Table */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-md overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 table-fixed">
-          <thead className="bg-gray-50">
+      <div className="rounded-xl border overflow-hidden overflow-x-auto" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <table className="min-w-full table-fixed" style={{ borderColor: 'var(--border-color)' }}>
+          <thead style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-muted)' }}>
             <tr>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+              <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider w-12">
                 <input
                   type="checkbox"
                   checked={selectedIds.size > 0 && selectedIds.size === profiles.length}
                   onChange={(e) => handleSelectAll(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-white/10 text-blue-600 focus:ring-blue-500"
                 />
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+              <th className="px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-32">
                 Name
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+              <th className="px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-24">
                 UID
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+              <th className="px-2 py-2 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">
                 Group
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+              <th className="px-2 py-2 text-left text-xs font-medium uppercase tracking-wider min-w-[120px]">
                 Proxy
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+              <th className="px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-32">
                 Browser
               </th>
-              <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+              <th className="px-2 py-2 text-center text-xs font-medium text-gray-400 uppercase tracking-wider w-20">
                 Auto Reset
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+              <th className="px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-24">
                 Status
               </th>
-              <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+              <th className="px-2 py-2 text-center text-xs font-medium text-gray-400 uppercase tracking-wider w-20">
                 Used
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">
+              <th className="px-2 py-2 text-left text-xs font-medium uppercase tracking-wider min-w-[140px]">
                 Last Opened
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 min-w-[200px]">
+              <th className="px-2 py-2 text-left text-xs font-medium uppercase tracking-wider sticky right-0 min-w-[200px]" style={{ backgroundColor: 'var(--bg-surface-2)' }}>
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody style={{ backgroundColor: 'var(--bg-surface)' }}>
             {paginatedProfiles.length === 0 ? (
               <tr>
-                <td colSpan={11} className="px-6 py-12 text-center text-sm text-gray-700 bg-gray-50">
+                <td colSpan={11} className="px-6 py-12 text-center text-sm text-gray-400 bg-white/5">
                   <div className="flex flex-col items-center gap-2">
                     <span className="text-2xl">📭</span>
                     <span className="font-medium">Không tìm thấy profile nào</span>
-                    <span className="text-xs text-gray-500">Thử thay đổi bộ lọc hoặc tạo profile mới</span>
+                    <span className="text-xs text-gray-400">Thử thay đổi bộ lọc hoặc tạo profile mới</span>
                   </div>
                 </td>
               </tr>
@@ -821,17 +835,17 @@ function ProfilesContent() {
                 <tr
                   key={profile.id}
                   ref={highlightedProfileId === profile.id ? highlightedRowRef : null}
-                  className={`hover:bg-gray-50 transition-colors duration-700 ${highlightedProfileId === profile.id ? 'bg-yellow-100 ring-2 ring-yellow-400 ring-inset' : ''}`}
+                  className={`hover:bg-white/5 transition-colors duration-700 ${highlightedProfileId === profile.id ? 'bg-yellow-100 ring-2 ring-yellow-400 ring-inset' : ''}`}
                 >
-                  <td className="px-3 py-2 whitespace-nowrap border-b border-gray-100">
+                  <td className="px-3 py-2 whitespace-nowrap border-b" style={{ borderColor: 'var(--border-color)' }}>
                     <input
                       type="checkbox"
                       checked={selectedIds.has(profile.id)}
                       onChange={(e) => handleSelectOne(profile.id, e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-white/10 text-blue-600 focus:ring-blue-500"
                     />
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900 border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium border-b" style={{ borderColor: 'var(--border-color)' }}>
                     <button
                       onClick={() => setDetailsProfileId(profile.id)}
                       className="text-blue-600 hover:text-blue-800 hover:underline font-bold text-left truncate max-w-[120px]"
@@ -840,7 +854,7 @@ function ProfilesContent() {
                       {profile.name}
                     </button>
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900 font-mono font-semibold border-b border-gray-100" title={profile.profileUid}>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs font-mono font-semibold border-b" style={{ borderColor: 'var(--border-color)' }} title={profile.profileUid}>
                     <div className="flex flex-col">
                       <span>{profile.profileUid.substring(0, 8)}...</span>
                       {/* Badge hiển thị loại trình duyệt/provider */}
@@ -850,18 +864,18 @@ function ProfilesContent() {
                         </span>
                       )}
                       {profile.connection && profile.browserProvider !== 'gpmlogin_global' && (
-                        <span className="text-[9px] text-gray-500 font-sans truncate max-w-[70px]">
+                        <span className="text-[9px] text-gray-400 font-sans truncate max-w-[70px]">
                           {profile.connection.name}
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900 font-medium border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium border-b" style={{ borderColor: 'var(--border-color)' }}>
                     {profile.groupId
                       ? groups.find((g) => g.id === profile.groupId)?.name || `Group ${profile.groupId}`
-                      : <span className="text-gray-500">-</span>}
+                      : <span className="text-gray-400">-</span>}
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap border-b" style={{ borderColor: 'var(--border-color)' }}>
                     <ProxySelector
                       profileId={profile.id}
                       currentProxyId={profile.proxy?.id || null}
@@ -869,7 +883,7 @@ function ProfilesContent() {
                       onSuccess={fetchProfiles}
                     />
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs border-b" style={{ borderColor: 'var(--border-color)' }}>
                     {profile.browserType ? (
                       <span
                         className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold rounded-full shadow-sm ${profile.browserType === 'gpm' ? 'bg-purple-600 text-white border border-purple-700' :
@@ -885,25 +899,25 @@ function ProfilesContent() {
                               profile.browserType}
                       </span>
                     ) : (
-                      <span className="text-gray-600 text-[10px] font-semibold" title="Chưa có thông tin browser type. Hãy sync từ GPMLogin.">
+                      <span className="text-gray-400 text-[10px] font-semibold" title="Chưa có thông tin browser type. Hãy sync từ GPMLogin.">
                         <span className="opacity-70">—</span>
                       </span>
                     )}
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-center border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap text-center border-b" style={{ borderColor: 'var(--border-color)' }}>
                     {profile.autoResetIp ? (
                       <span className="text-green-600 font-black text-sm" title="Auto Reset IP enabled">✓</span>
                     ) : (
-                      <span className="text-gray-500 font-semibold">-</span>
+                      <span className="text-gray-400 font-semibold">-</span>
                     )}
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap border-b" style={{ borderColor: 'var(--border-color)' }}>
                     {getStatusBadge(profile.status)}
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900 text-center font-semibold border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-center font-semibold border-b" style={{ borderColor: 'var(--border-color)' }}>
                     {profile._count?.accounts || 0}
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900 font-medium border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium border-b" style={{ borderColor: 'var(--border-color)' }}>
                     {profile.lastOpened
                       ? new Date(profile.lastOpened).toLocaleString('vi-VN', {
                         day: '2-digit',
@@ -912,9 +926,9 @@ function ProfilesContent() {
                         hour: '2-digit',
                         minute: '2-digit',
                       })
-                      : <span className="text-gray-500">-</span>}
+                      : <span className="text-gray-400">-</span>}
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium sticky right-0 bg-white z-10 hover:bg-gray-50 border-l border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium sticky right-0 z-10 border-l border-b" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
                     <div className="flex items-center gap-1">
                       {profile.status === 'running' ? (
                         <button
@@ -948,7 +962,7 @@ function ProfilesContent() {
 
                       <button
                         onClick={() => setEditingProfileId(profile.id)}
-                        className="px-1.5 py-0.5 text-[10px] font-medium text-gray-700 hover:text-white hover:bg-gray-600 border border-gray-300 rounded transition-colors whitespace-nowrap"
+                        className="px-1.5 py-0.5 text-[10px] font-medium text-gray-400 hover:text-white hover:bg-gray-600 border border-white/10 rounded transition-colors whitespace-nowrap"
                         title="Chỉnh sửa"
                       >
                         ✏️
@@ -1016,10 +1030,10 @@ function ProfilesContent() {
       {/* Pagination */}
       {
         profiles.length > 0 && (
-          <div className="bg-white shadow rounded-lg p-4 mt-4">
+          <div className="rounded-xl border p-4 mt-4" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               {/* Page Info */}
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-400">
                 Hiển thị{' '}
                 <span className="font-semibold">
                   {startIndex + 1}-{Math.min(endIndex, profiles.length)}
@@ -1032,7 +1046,7 @@ function ProfilesContent() {
                 <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-1.5 text-sm text-gray-400 border border-white/10 rounded-md hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   ← Trước
                 </button>
@@ -1057,7 +1071,7 @@ function ProfilesContent() {
                         onClick={() => setCurrentPage(pageNum)}
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors ${currentPage === pageNum
                           ? 'bg-blue-600 text-white'
-                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                          : 'text-gray-400 border border-white/10 hover:bg-white/5'
                           }`}
                       >
                         {pageNum}
@@ -1069,7 +1083,7 @@ function ProfilesContent() {
                 <button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-1.5 text-sm text-gray-400 border border-white/10 rounded-md hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Sau →
                 </button>

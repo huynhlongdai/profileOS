@@ -236,48 +236,48 @@ export default function ProxiesPage() {
 
   const getStatusBadge = (status: string) => {
     const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800',
-      dead: 'bg-red-100 text-red-800',
-      checking: 'bg-yellow-100 text-yellow-800',
-      error: 'bg-red-100 text-red-800',
+      active: 'bg-emerald-500/20 text-emerald-300',
+      dead: 'bg-red-500/20 text-red-300',
+      checking: 'bg-yellow-500/20 text-yellow-300',
+      error: 'bg-red-500/20 text-red-300',
     }
     return (
-      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${colors[status] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${colors[status] || 'bg-white/10 text-gray-400'}`}>
         {status}
       </span>
     )
   }
 
-  if (loading) return <div className="text-center py-12">Loading...</div>
+  if (loading) return (<div className="space-y-4"><div className="h-8 w-48 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--bg-surface-2)' }} /><div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>{[...Array(6)].map((_, i) => <div key={i} className="h-12 border-b animate-pulse" style={{ backgroundColor: i % 2 === 0 ? 'var(--bg-surface)' : 'var(--bg-surface-2)', borderColor: 'var(--border-color)' }} />)}</div></div>)
 
   const progressPct = bulkProgress ? Math.round((bulkProgress.done / bulkProgress.total) * 100) : 0
 
   return (
     <div className="w-full px-4 sm:px-0">
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">Proxies</h1>
+      <h1 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Proxies</h1>
 
       {/* Filter / Action bar */}
-      <div className="bg-white shadow rounded-lg p-4 mb-4">
+      <div className="rounded-xl border p-4 mb-4" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
         <div className="flex flex-col lg:flex-row gap-3 items-end lg:items-center">
           {/* Search */}
           <div className="flex-1 min-w-[200px] w-full lg:w-auto">
-            <label className="block text-sm font-medium text-gray-700 mb-1">🔍 Tìm kiếm</label>
+            <label className="block text-sm font-medium text-gray-400 mb-1">🔍 Tìm kiếm</label>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm theo label, proxy, IP, server URL..."
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border px-3 py-2 text-sm" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
           {/* Status filter */}
           <div className="w-full lg:w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">📊 Trạng thái</label>
+            <label className="block text-sm font-medium text-gray-400 mb-1">📊 Trạng thái</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border px-3 py-2 text-sm" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             >
               <option value="">Tất cả</option>
               <option value="active">Active</option>
@@ -288,20 +288,20 @@ export default function ProxiesPage() {
           </div>
 
           {/* Count */}
-          <div className="text-sm text-gray-600 whitespace-nowrap">
+          <div className="text-sm text-gray-400 whitespace-nowrap">
             <span className="font-semibold">{proxies.length}</span> / {allProxies.length}
           </div>
 
           {(searchQuery || statusFilter) && (
             <button
               onClick={() => { setSearchQuery(''); setStatusFilter('') }}
-              className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors whitespace-nowrap"
+              className="px-3 py-2 rounded-lg" style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}
             >🗑️ Xóa lọc</button>
           )}
 
           {/* Action buttons */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={fetchProxies} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
+            <button onClick={fetchProxies} className="px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-secondary)' }}>
               🔄 Refresh
             </button>
             <button onClick={() => setShowBulkImportModal(true)} className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">
@@ -316,13 +316,13 @@ export default function ProxiesPage() {
 
       {/* Bulk action bar — visible when rows selected */}
       {someSelected && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-3 flex flex-wrap items-center gap-3">
-          <span className="text-sm font-semibold text-blue-700">
+        <div className="border border-indigo-500/30 bg-indigo-500/10 rounded-lg px-4 py-3 mb-3 flex flex-wrap items-center gap-3">
+          <span className="text-sm font-semibold text-indigo-300">
             ✅ Đã chọn {selectedIds.size} proxy
           </span>
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="text-xs text-blue-500 hover:underline"
+            className="text-xs text-indigo-400 hover:underline"
           >
             Bỏ chọn tất cả
           </button>
@@ -359,9 +359,9 @@ export default function ProxiesPage() {
 
       {/* Bulk check progress bar */}
       {bulkProgress && (
-        <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-3">
+        <div className="border border-white/10 rounded-lg px-4 py-3 mb-3">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-medium text-gray-700">
+            <span className="text-xs font-medium text-gray-400">
               {bulkProgress.running ? `⏳ Đang check... ${bulkProgress.done}/${bulkProgress.total}` : `✅ Hoàn tất ${bulkProgress.total} proxy`}
             </span>
             <div className="flex items-center gap-3 text-xs">
@@ -369,28 +369,28 @@ export default function ProxiesPage() {
               <span className="text-red-500 font-semibold">☠ {bulkProgress.dead}</span>
               <span className="text-yellow-600 font-semibold">⚠ {bulkProgress.error}</span>
               {!bulkProgress.running && (
-                <button onClick={() => setBulkProgress(null)} className="text-gray-400 hover:text-gray-600 ml-1">✕</button>
+                <button onClick={() => setBulkProgress(null)} className="text-gray-400 hover:text-gray-400 ml-1">✕</button>
               )}
             </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-white/10 rounded-full h-2">
             <div
-              className={`h-2 rounded-full transition-all duration-300 ${bulkProgress.running ? 'bg-blue-500' : 'bg-green-500'}`}
+              className={`h-2 rounded-full transition-all duration-300 ${bulkProgress.running ? 'bg-indigo-500/100' : 'bg-green-500'}`}
               style={{ width: `${progressPct}%` }}
             />
           </div>
           {!bulkProgress.running && (
-            <p className="text-xs text-gray-500 mt-1">{progressPct}% — {bulkProgress.active} active / {bulkProgress.dead} dead / {bulkProgress.error} error</p>
+            <p className="text-xs text-gray-400 mt-1">{progressPct}% — {bulkProgress.active} active / {bulkProgress.dead} dead / {bulkProgress.error} error</p>
           )}
         </div>
       )}
 
       {/* Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
         <div className="overflow-x-auto -mx-4 sm:mx-0">
           <div className="inline-block min-w-full align-middle">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full ">
+              <thead style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-muted)' }}>
                 <tr>
                   {/* Select-all checkbox */}
                   <th className="px-3 py-2 w-8">
@@ -399,25 +399,25 @@ export default function ProxiesPage() {
                       checked={allVisibleSelected}
                       ref={(el) => { if (el) el.indeterminate = someSelected && !allVisibleSelected }}
                       onChange={toggleSelectAll}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      className="rounded border-white/10 text-blue-600 focus:ring-blue-500 cursor-pointer"
                       title="Chọn tất cả"
                     />
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Label</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[180px]">Raw Proxy</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">Server URL</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">IP Before</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">IP After</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Status</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Used By</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">Last Check</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40 sticky right-0 bg-gray-50">Actions</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-32">Label</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider min-w-[180px]">Raw Proxy</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider min-w-[140px]">Server URL</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-32">IP Before</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-32">IP After</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-24">Status</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-28">Used By</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider min-w-[140px]">Last Check</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-40 sticky right-0" style={{ backgroundColor: 'var(--bg-surface-2)' }}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody style={{ backgroundColor: 'var(--bg-surface)' }}>
                 {proxies.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-8 text-center text-sm text-gray-500">
+                    <td colSpan={10} className="px-6 py-8 text-center text-sm text-gray-400">
                       Không có proxy nào. Click &quot;+ Add Proxy&quot; hoặc &quot;📥 Bulk Import&quot; để thêm.
                     </td>
                   </tr>
@@ -428,7 +428,7 @@ export default function ProxiesPage() {
                     return (
                       <tr
                         key={proxy.id}
-                        className={`hover:bg-gray-50 cursor-pointer ${isSelected ? 'bg-blue-50' : ''}`}
+                        className={`hover:bg-white/5 cursor-pointer ${isSelected ? 'bg-indigo-500/10' : ''}`}
                         onClick={() => toggleSelect(proxy.id)}
                       >
                         {/* Checkbox */}
@@ -437,46 +437,46 @@ export default function ProxiesPage() {
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelect(proxy.id)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                            className="rounded border-white/10 text-blue-600 focus:ring-blue-500 cursor-pointer"
                           />
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900 border-b border-gray-100">
+                        <td className="px-3 py-2 whitespace-nowrap text-xs font-medium text-white border-b border-white/5">
                           {proxy.label}
                         </td>
-                        <td className="px-3 py-2 text-xs text-gray-500 border-b border-gray-100">
+                        <td className="px-3 py-2 text-xs text-gray-400 border-b border-white/5">
                           <div className="max-w-[180px] truncate" title={proxy.rawProxy}>{proxy.rawProxy}</div>
                         </td>
-                        <td className="px-3 py-2 text-xs text-gray-500 border-b border-gray-100">
+                        <td className="px-3 py-2 text-xs text-gray-400 border-b border-white/5">
                           <div className="max-w-[140px] truncate" title={proxy.proxyServerUrl || ''}>{proxy.proxyServerUrl || '-'}</div>
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 font-mono border-b border-gray-100">{proxy.ipBefore || '-'}</td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 font-mono font-semibold border-b border-gray-100">{proxy.ipAfter || '-'}</td>
-                        <td className="px-3 py-2 whitespace-nowrap border-b border-gray-100">
+                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-400 font-mono border-b border-white/5">{proxy.ipBefore || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-400 font-mono font-semibold border-b border-white/5">{proxy.ipAfter || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap border-b border-white/5">
                           {isProcessing
                             ? <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 animate-pulse">checking…</span>
                             : getStatusBadge(proxy.status)
                           }
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 border-b border-gray-100">
+                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-400 border-b border-white/5">
                           <div className="flex flex-col">
                             <span>{proxy._count.accounts} acc</span>
                             <span>{proxy._count.profiles} prof</span>
                           </div>
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 border-b border-gray-100">
+                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-400 border-b border-white/5">
                           {proxy.lastCheck
                             ? new Date(proxy.lastCheck).toLocaleString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
                             : '-'}
                         </td>
                         <td
-                          className="px-3 py-2 whitespace-nowrap text-sm font-medium sticky right-0 bg-white z-10 hover:bg-gray-50 border-l border-b border-gray-100"
+                          className="px-3 py-2 whitespace-nowrap text-sm font-medium sticky right-0 z-10" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}
                           onClick={(e) => e.stopPropagation()}
                         >
                           <div className="flex items-center gap-1 flex-wrap">
                             <button
                               onClick={() => handleCheck(proxy.id)}
                               disabled={isProcessing}
-                              className="px-1.5 py-0.5 text-[10px] text-blue-600 hover:bg-blue-50 border border-blue-200 rounded disabled:opacity-50 transition-colors"
+                              className="px-1.5 py-0.5 text-[10px] text-blue-600 hover:border border-indigo-500/30 bg-indigo-500/10 rounded disabled:opacity-50 transition-colors"
                               title="Kiểm tra proxy"
                             >
                               {isProcessing ? '⏳' : '🔍'}
@@ -491,7 +491,7 @@ export default function ProxiesPage() {
                             </button>
                             <button
                               onClick={() => setEditingProxyId(proxy.id)}
-                              className="px-1.5 py-0.5 text-[10px] text-gray-600 hover:bg-gray-100 border border-gray-200 rounded transition-colors"
+                              className="px-1.5 py-0.5 text-[10px] text-gray-400 hover:bg-white/10 border border-white/10 rounded transition-colors"
                               title="Chỉnh sửa"
                             >✏️</button>
                             <button

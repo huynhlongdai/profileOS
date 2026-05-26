@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Users, Globe, Shield, FileText, ListTodo,
   Settings, Zap, MonitorPlay, UserPlus, Link2, Sheet, ChevronLeft,
-  ChevronRight, Layers, Plug
+  ChevronRight, Layers, Plug, Crosshair
 } from 'lucide-react'
 
 const navGroups = [
@@ -13,6 +13,7 @@ const navGroups = [
     label: 'Main',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/workspace', label: 'Workspace', icon: Crosshair },
       { href: '/profiles', label: 'Profiles', icon: Globe },
       { href: '/accounts', label: 'Accounts', icon: Users },
       { href: '/proxies', label: 'Proxies', icon: Shield },

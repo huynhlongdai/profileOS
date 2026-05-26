@@ -696,7 +696,7 @@ export default function AccountsPage() {
     }
     return (
       <span
-        className={`px-2 py-1 text-xs font-semibold rounded-full ${colors[status] || 'bg-gray-100 text-gray-800'
+        className={`px-2 py-1 text-xs font-semibold rounded-full ${colors[status] || 'bg-white/10 text-gray-800'
           }`}
       >
         {status}
@@ -723,18 +723,30 @@ export default function AccountsPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12">Loading...</div>
+    return (
+      <div className="space-y-4">
+        <div className="h-8 w-48 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--bg-surface-2)' }} />
+        <div className="rounded-xl border p-4" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
+            {[...Array(4)].map((_, i) => <div key={i} className="h-9 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--bg-surface-2)' }} />)}
+          </div>
+        </div>
+        <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+          {[...Array(8)].map((_, i) => <div key={i} className="h-12 border-b animate-pulse" style={{ backgroundColor: i % 2 === 0 ? 'var(--bg-surface)' : 'var(--bg-surface-2)', borderColor: 'var(--border-color)' }} />)}
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="w-full px-4 sm:px-0">
       {/* Title with Action Buttons */}
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Accounts</h1>
+        <h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Accounts</h1>
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={fetchAccounts}
-            className="px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 active:bg-gray-300 transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg hover:bg-white/10 transition-colors flex items-center gap-2 "
             title="Refresh"
           >
             <span>🔄</span>
@@ -751,7 +763,7 @@ export default function AccountsPage() {
               }
               input.click()
             }}
-            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+            className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 "
             title="Import Accounts"
           >
             <span>📥</span>
@@ -763,7 +775,7 @@ export default function AccountsPage() {
               const format = confirm('Export as CSV? (Cancel for JSON)') ? 'csv' : 'json'
               handleExport(format)
             }}
-            className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-md hover:bg-green-700 active:bg-green-800 transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+            className="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 "
             title="Export Accounts"
           >
             <span>📤</span>
@@ -771,7 +783,7 @@ export default function AccountsPage() {
           </button>
           <button
             onClick={() => setShowCreateTypeModal(true)}
-            className="px-4 py-2 text-sm font-medium bg-teal-600 text-white rounded-md hover:bg-teal-700 active:bg-teal-800 transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+            className="px-3 py-1.5 text-xs font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2 "
             title="Tạo loại account mới"
           >
             <span>🗂️</span>
@@ -779,7 +791,7 @@ export default function AccountsPage() {
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700 active:bg-indigo-800 transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+            className="px-3 py-1.5 text-xs font-medium text-white rounded-lg transition-colors flex items-center gap-2 "
           >
             <span>+</span>
             <span>Add Account</span>
@@ -787,7 +799,7 @@ export default function AccountsPage() {
           <button
             onClick={openQuickAdd}
             disabled={isQuickAddMode}
-            className="px-4 py-2 text-sm font-medium bg-amber-500 text-white rounded-md hover:bg-amber-600 active:bg-amber-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+            className="px-3 py-1.5 text-xs font-medium bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors flex items-center gap-2 "
             title="Thêm nhiều accounts nhanh như Excel"
           >
             <span>⚡</span>
@@ -795,7 +807,7 @@ export default function AccountsPage() {
           </button>
           <button
             onClick={() => setShowSnapModal(true)}
-            className="px-4 py-2 text-sm font-medium bg-violet-600 text-white rounded-md hover:bg-violet-700 active:bg-violet-800 transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+            className="px-3 py-1.5 text-xs font-medium bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors flex items-center gap-2 "
             title="Snap tài khoản từ các profile đang mở"
           >
             <span>📸</span>
@@ -803,7 +815,7 @@ export default function AccountsPage() {
           </button>
           <button
             onClick={handleSyncLabels}
-            className="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 active:bg-purple-800 transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+            className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 "
             title="Đồng bộ lại tất cả label thành format 4 số"
           >
             <span>🔄</span>
@@ -813,12 +825,12 @@ export default function AccountsPage() {
       </div>
 
       {/* Controls */}
-      <div className="bg-white shadow rounded-lg p-4 mb-4">
+      <div className="rounded-xl border p-4 mb-4" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
         {/* Filters Row */}
         <div className="flex flex-wrap gap-3 items-end mb-3">
           {/* Search Input */}
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-400 mb-1">
               🔍 Tìm kiếm
             </label>
             <input
@@ -826,19 +838,19 @@ export default function AccountsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm theo label, identifier..."
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="w-full rounded-lg border px-3 py-2 text-sm" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
 
           {/* Status Filter */}
           <div className="w-36">
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-400 mb-1">
               📊 Trạng thái
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="w-full rounded-lg border px-3 py-2 text-sm" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             >
               <option value="">Tất cả</option>
               <option value="active">Active</option>
@@ -850,13 +862,13 @@ export default function AccountsPage() {
 
           {/* Type Filter */}
           <div className="w-36">
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-400 mb-1">
               📋 Loại
             </label>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="w-full rounded-lg border px-3 py-2 text-sm" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             >
               <option value="">Tất cả</option>
               {uniqueTypes
@@ -879,13 +891,13 @@ export default function AccountsPage() {
 
           {/* Profile Filter */}
           <div className="w-40">
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-gray-400 mb-1">
               👤 Profile
             </label>
             <select
               value={profileFilter}
               onChange={(e) => setProfileFilter(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+              className="w-full rounded-lg border px-3 py-2 text-sm" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             >
               <option value="">Tất cả</option>
               {uniqueProfiles.map((profile) => (
@@ -897,9 +909,9 @@ export default function AccountsPage() {
           </div>
 
           {/* Results Count */}
-          <div className="text-sm text-gray-700 whitespace-nowrap self-end mb-1 px-2 py-1 bg-gray-50 rounded-md">
+          <div className="text-sm text-gray-400 whitespace-nowrap self-end mb-1 px-2 py-1 bg-white/5 rounded-md">
             <span className="font-semibold text-blue-600">{accounts.length}</span>
-            <span className="text-gray-500"> / {allAccounts.length}</span>
+            <span className="text-gray-400"> / {allAccounts.length}</span>
           </div>
 
           {/* Clear Filters */}
@@ -912,7 +924,7 @@ export default function AccountsPage() {
                 setProfileFilter('')
                 setCurrentPage(1)
               }}
-              className="px-3 py-2 text-xs font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors self-end mb-1 border border-gray-300"
+              className="px-3 py-2 text-xs font-medium text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors self-end mb-1 border border-white/10"
             >
               ✕ Clear
             </button>
@@ -956,15 +968,15 @@ export default function AccountsPage() {
           if (pluginKeys.length === 0 && accountsWithoutPlugin.length === 0) {
             // Loading plugin info
             return (
-              <div className="pt-3 border-t border-gray-200 mt-3">
-                <div className="text-sm text-gray-500">Loading plugin information...</div>
+              <div className="pt-3 border-t border-white/10 mt-3">
+                <div className="text-sm text-gray-400">Loading plugin information...</div>
               </div>
             )
           }
 
           return (
-            <div className="space-y-3 pt-3 border-t border-gray-200 mt-3">
-              <div className="text-sm text-gray-600">
+            <div className="space-y-3 pt-3 border-t border-white/10 mt-3">
+              <div className="text-sm text-gray-400">
                 <span className="font-semibold text-blue-600">{selectedIds.size}</span> account(s) selected
               </div>
 
@@ -1008,7 +1020,7 @@ export default function AccountsPage() {
                               console.error('Bulk check error:', error)
                             }
                           }}
-                          className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 active:bg-blue-800 transition-colors whitespace-nowrap shadow-sm hover:shadow-md"
+                          className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap "
                         >
                           ✓ Check ({pluginAccounts.length})
                         </button>
@@ -1036,7 +1048,7 @@ export default function AccountsPage() {
                               console.error('Bulk care error:', error)
                             }
                           }}
-                          className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-md hover:bg-green-700 active:bg-green-800 transition-colors whitespace-nowrap shadow-sm hover:shadow-md"
+                          className="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors whitespace-nowrap "
                         >
                           {pluginInfo.pluginName === 'coingecko_candy' ? '🍬' : '♥'} {pluginInfo.pluginName === 'coingecko_candy' ? 'Claim Candy' : 'Care'} ({pluginAccounts.length})
                         </button>
@@ -1090,7 +1102,7 @@ export default function AccountsPage() {
               type="button"
               onClick={() => addQuickRow()}
               disabled={quickAddSubmitting}
-              className="px-3 py-1.5 text-xs font-medium bg-white border border-amber-300 text-amber-700 rounded-md hover:bg-amber-100 disabled:opacity-50 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium border border-amber-500/30 text-amber-400 rounded-lg hover:bg-amber-500/10 disabled:opacity-50 transition-colors"
             >
               + Add Row
             </button>
@@ -1110,7 +1122,7 @@ export default function AccountsPage() {
               type="button"
               onClick={closeQuickAdd}
               disabled={quickAddSubmitting}
-              className="px-3 py-1.5 text-xs font-medium bg-white border border-gray-300 text-gray-600 rounded-md hover:bg-gray-100 disabled:opacity-50 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium border border-white/10 text-gray-400 rounded-lg hover:bg-white/10 disabled:opacity-50 transition-colors"
             >
               ✕ Cancel
             </button>
@@ -1118,11 +1130,11 @@ export default function AccountsPage() {
         </div>
       )}
 
-      <div className="bg-white shadow overflow-x-auto sm:rounded-md">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="rounded-xl border overflow-x-auto overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+        <table className="min-w-full ">
+          <thead style={{ backgroundColor: 'var(--bg-surface-2)', color: 'var(--text-muted)' }}>
             <tr>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-8">
                 {isQuickAddMode ? (
                   <span className="text-amber-500">#</span>
                 ) : (
@@ -1158,65 +1170,65 @@ export default function AccountsPage() {
               ) : (
                 <>
                   <th
-                    className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 cursor-pointer hover:bg-gray-100 select-none"
+                    className="px-2 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-white/10 select-none"
                     onClick={() => handleSort('label')}
                   >
                     <div className="flex items-center gap-1">Label {getSortIcon('label')}</div>
                   </th>
                   <th
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 select-none"
                     onClick={() => handleSort('type')}
                   >
                     <div className="flex items-center gap-1">Type {getSortIcon('type')}</div>
                   </th>
                   <th
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 select-none"
                     onClick={() => handleSort('identifier')}
                   >
                     <div className="flex items-center gap-1">Identifier {getSortIcon('identifier')}</div>
                   </th>
                   <th
-                    className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 cursor-pointer hover:bg-gray-100 select-none"
+                    className="px-2 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-32 cursor-pointer hover:bg-white/10 select-none"
                     onClick={() => handleSort('profile')}
                   >
                     <div className="flex items-center gap-1">Profile {getSortIcon('profile')}</div>
                   </th>
                   <th
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 select-none"
                     onClick={() => handleSort('proxy')}
                   >
                     <div className="flex items-center gap-1">Proxy {getSortIcon('proxy')}</div>
                   </th>
                   <th
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 select-none"
                     onClick={() => handleSort('status')}
                   >
                     <div className="flex items-center gap-1">Status {getSortIcon('status')}</div>
                   </th>
                   <th
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 select-none"
                     onClick={() => handleSort('lastCheck')}
                   >
                     <div className="flex items-center gap-1">Last Check {getSortIcon('lastCheck')}</div>
                   </th>
                   <th
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 select-none"
                     onClick={() => handleSort('createdAt')}
                   >
                     <div className="flex items-center gap-1">Created {getSortIcon('createdAt')}</div>
                   </th>
                   <th
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                    className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-white/10 select-none"
                     onClick={() => handleSort('notes')}
                   >
                     <div className="flex items-center gap-1">Notes {getSortIcon('notes')}</div>
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
                 </>
               )}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody style={{ backgroundColor: 'var(--bg-surface)' }}>
             {/* ── Quick Add inline rows ─────────────────────────────────────── */}
             {isQuickAddMode &&
               quickAddRows.map((row, idx) => (
@@ -1238,7 +1250,7 @@ export default function AccountsPage() {
             {/* ── Separator between quick add rows and existing accounts ─── */}
             {isQuickAddMode && quickAddRows.length > 0 && paginatedAccounts.length > 0 && (
               <tr>
-                <td colSpan={9} className="py-1 bg-gray-100">
+                <td colSpan={9} className="py-1 bg-white/10">
                   <div className="flex items-center gap-2 px-3">
                     <div className="flex-1 h-px bg-gray-300" />
                     <span className="text-[10px] text-gray-400 uppercase tracking-wider">Existing accounts</span>
@@ -1249,14 +1261,14 @@ export default function AccountsPage() {
             )}
             {paginatedAccounts.length === 0 && !isQuickAddMode ? (
               <tr>
-                <td colSpan={9} className="px-6 py-12 text-center text-sm text-gray-500">
+                <td colSpan={9} className="px-6 py-12 text-center text-sm text-gray-400">
                   No accounts found
                 </td>
               </tr>
             ) : paginatedAccounts.length === 0 && isQuickAddMode ? null : (
               paginatedAccounts.map((account) => (
-                <tr key={account.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-2 whitespace-nowrap border-b border-gray-100">
+                <tr key={account.id} className="hover:bg-white/5">
+                  <td className="px-3 py-2 whitespace-nowrap border-b border-white/5">
                     <input
                       type="checkbox"
                       checked={selectedIds.has(account.id)}
@@ -1271,7 +1283,7 @@ export default function AccountsPage() {
                       }}
                     />
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900 border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-white border-b border-white/5">
                     <span
                       title={account.label}
                       className="block truncate max-w-[52px]"
@@ -1279,19 +1291,19 @@ export default function AccountsPage() {
                       {account.label}
                     </span>
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 border-b border-gray-100">
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-400 border-b border-white/5">
                     <span className="inline-flex items-center gap-1">
                       {getAccountTypeLabel(account.accountType)}
                     </span>
                   </td>
                   <td
-                    className="px-3 py-2 whitespace-nowrap text-xs text-blue-600 cursor-pointer hover:text-blue-800 hover:underline transition-colors border-b border-gray-100"
+                    className="px-3 py-2 whitespace-nowrap text-xs text-blue-600 cursor-pointer hover:text-blue-800 hover:underline transition-colors border-b border-white/5"
                     onClick={() => setViewingAccountId(account.id)}
                     title="Click to view account details"
                   >
                     {account.identifier}
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-500 border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-400 border-b border-white/5">
                     <span
                       title={account.profile?.name || '-'}
                       className="block truncate max-w-[120px]"
@@ -1299,7 +1311,7 @@ export default function AccountsPage() {
                       {account.profile?.name || '-'}
                     </span>
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap border-b border-gray-100">
+                  <td className="px-3 py-2 whitespace-nowrap border-b border-white/5">
                     <ProxySelector
                       accountId={account.id}
                       currentProxyId={account.proxy?.id || null}
@@ -1309,20 +1321,20 @@ export default function AccountsPage() {
                       onSuccess={fetchAccounts}
                     />
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap border-b border-gray-100">
+                  <td className="px-3 py-2 whitespace-nowrap border-b border-white/5">
                     {getStatusBadge(account.status)}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 border-b border-gray-100">
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-400 border-b border-white/5">
                     {account.lastCheck
                       ? new Date(account.lastCheck).toLocaleString('vi-VN')
                       : '-'}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-400 border-b border-gray-100">
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-400 border-b border-white/5">
                     {account.createdAt
                       ? new Date(account.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
                       : '-'}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500 border-b border-gray-100 group">
+                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-400 border-b border-white/5 group">
                     {editingNoteId === account.id ? (
                       <input
                         autoFocus
@@ -1334,11 +1346,11 @@ export default function AccountsPage() {
                           if (e.key === 'Enter') handleSaveNote(account.id)
                           if (e.key === 'Escape') setEditingNoteId(null)
                         }}
-                        className="w-full rounded border-blue-500 px-1 py-0.5 text-xs text-gray-900 bg-blue-50 focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-[120px] max-w-[200px]"
+                        className="w-full rounded border-blue-500 px-1 py-0.5 text-xs text-white bg-blue-50 focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-[120px] max-w-[200px]"
                       />
                     ) : (
                       <div 
-                        className="truncate max-w-[150px] cursor-pointer hover:bg-gray-100 px-1 py-0.5 rounded -mx-1" 
+                        className="truncate max-w-[150px] cursor-pointer hover:bg-white/10 px-1 py-0.5 rounded -mx-1" 
                         onClick={() => {
                           setEditingNoteId(account.id)
                           setEditingNoteText(account.notes || '')
@@ -1349,7 +1361,7 @@ export default function AccountsPage() {
                       </div>
                     )}
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium border-b border-gray-100">
+                  <td className="px-2 py-2 whitespace-nowrap text-xs font-medium border-b border-white/5">
                     <div className="flex items-center gap-0.5 flex-nowrap">
                       {/* Check button - only show if plugin supports check */}
                       {pluginInfos[account.accountType]?.hasCheck && (
@@ -1468,7 +1480,7 @@ export default function AccountsPage() {
                       {/* Edit button */}
                       <button
                         onClick={() => setEditingAccountId(account.id)}
-                        className="px-1.5 py-0.5 text-[10px] font-medium text-gray-700 hover:text-white hover:bg-gray-600 border border-gray-300 rounded transition-colors whitespace-nowrap"
+                        className="px-1.5 py-0.5 text-[10px] font-medium text-gray-400 hover:text-white hover:bg-gray-600 border border-white/10 rounded transition-colors whitespace-nowrap"
                         title="Chỉnh sửa"
                       >
                         ✏️
@@ -1509,17 +1521,17 @@ export default function AccountsPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="bg-white shadow rounded-lg p-4 mt-4">
+      <div className="rounded-xl border p-4 mt-4" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Per page:</label>
+            <label className="text-sm text-gray-400">Per page:</label>
             <select
               value={perPage}
               onChange={(e) => {
                 setPerPage(Number(e.target.value))
                 setCurrentPage(1)
               }}
-              className="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="rounded-lg border px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" style={{ backgroundColor: 'var(--bg-surface-2)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
@@ -1528,20 +1540,20 @@ export default function AccountsPage() {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-400">
               Page {currentPage} of {totalPages || 1}
             </span>
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1 text-sm bg-white/10 text-gray-400 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Previous
             </button>
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage >= totalPages}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1 text-sm bg-white/10 text-gray-400 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Next
             </button>
