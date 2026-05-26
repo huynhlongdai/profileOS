@@ -63,18 +63,8 @@ export class AccountService {
     limit?: number
   }): Promise<{ accounts: Account[]; total: number }> {
     const page = filter?.page || 1
-    // BUG-4 FIX: tăng default limit từ 100 lên 10000 → tránh mất data khi có nhiều accounts
     const limit = filter?.limit || 10000
     const skip = (page - 1) * limit
-
-    // DEBUG: Log filter parameters
-    console.log('[AccountService.listAccounts] Filter parameters:', {
-      status: filter?.status,
-      type: filter?.type,
-      search: filter?.search,
-      page,
-      limit,
-    })
 
     const where: Prisma.AccountWhereInput = {}
     if (filter?.status) where.status = filter.status
@@ -85,9 +75,6 @@ export class AccountService {
         { identifier: { contains: filter.search } },
       ]
     }
-
-    // DEBUG: Log WHERE condition
-    console.log('[AccountService.listAccounts] WHERE condition:', JSON.stringify(where, null, 2))
 
     const [accounts, total] = await Promise.all([
       prisma.account.findMany({
@@ -365,7 +352,7 @@ export class AccountService {
             fieldName: 'proxyId',
             oldValue: oldProfile.proxyId || null,
             newValue: payload.proxyId || null,
-            description: `Proxy synced from account ${oldAccount.label}: "${oldProfile.proxy?.label || 'None'}" → "${account.proxy?.label || 'None'}"`,
+            description: `Proxy synced from account ${oldAccount.label}: "${oldProfile.proxyId || 'None'}" → "${payload.proxyId || 'None'}"`,
           })
 
           // Tell GPMLogin app to update its proxy

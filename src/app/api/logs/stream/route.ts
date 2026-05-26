@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 import { logEmitter } from '@/lib/log-emitter'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/logs/stream - SSE Stream for real-time logs
  */

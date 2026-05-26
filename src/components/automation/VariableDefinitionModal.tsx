@@ -109,7 +109,7 @@ export function VariableDefinitionModal({
                                                     {action.selector || 'No selector'}
                                                 </div>
                                                 <div className="font-medium">
-                                                    Value: "{action.value}"
+                                                    Value: &quot;{action.value}&quot;
                                                 </div>
                                             </div>
                                             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
@@ -138,8 +138,8 @@ export function VariableDefinitionModal({
                         {variables.length === 0 ? (
                             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
                                 <p className="text-yellow-800">
-                                    No variables defined. Click "Add Variable" to create one, or
-                                    click "Skip" to create template without variables.
+                                    No variables defined. Click &quot;Add Variable&quot; to create one, or
+                                    click &quot;Skip&quot; to create template without variables.
                                 </p>
                             </div>
                         ) : (

@@ -206,7 +206,7 @@ export default function ProxiesPage() {
       try {
         const res = await fetch(`/api/proxies/${id}`, { method: 'DELETE' })
         const data = await res.json()
-        if (data.success) ok++ else fail++
+        if (data.success) { ok++ } else { fail++ }
       } catch { fail++ }
     }
     showToast(`Đã xóa ${ok} proxy${fail > 0 ? `, thất bại ${fail}` : ''}`, fail > 0 ? 'error' : 'success')

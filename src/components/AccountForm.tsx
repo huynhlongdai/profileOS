@@ -453,7 +453,7 @@ export default function AccountForm({
           </div>
           {formData.authViaAccountId && (
             <p className="mt-1 text-xs text-gray-500">
-              💡 Gợi ý: Click "Dùng từ account" để tự động điền identifier từ account được chọn ở "Login via Account"
+              💡 Gợi ý: Click &quot;Dùng từ account&quot; để tự động điền identifier từ account được chọn ở &quot;Login via Account&quot;
             </p>
           )}
         </div>

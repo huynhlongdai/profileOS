@@ -132,7 +132,7 @@ export function TemplateExecutionModal({
                     {variables.length === 0 ? (
                         <div className="bg-gray-50 border rounded-lg p-4 text-center">
                             <p className="text-gray-600">
-                                This template has no variables. Click "Execute" to run with default
+                                This template has no variables. Click &quot;Execute&quot; to run with default
                                 settings.
                             </p>
                         </div>

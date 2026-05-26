@@ -41,11 +41,11 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const module = await moduleService.setModuleEnabled(name, enabled)
+    const moduleConfig = await moduleService.setModuleEnabled(name, enabled)
 
     return NextResponse.json({
       success: true,
-      module,
+      module: moduleConfig,
     })
   } catch (error) {
     return NextResponse.json(

@@ -13,17 +13,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || undefined
     const search = searchParams.get('search') || undefined
     const page = parseInt(searchParams.get('page') || '1')
-    // BUG-4 FIX: tăng default limit từ 100 lên 10000 → tránh mất data khi có nhiều accounts
     const limit = parseInt(searchParams.get('limit') || '10000')
-
-    // DEBUG: Log API parameters
-    console.log('[API /api/accounts] GET request with params:', {
-      status,
-      type,
-      search,
-      page,
-      limit,
-    })
 
     const result = await accountService.listAccounts({
       status,

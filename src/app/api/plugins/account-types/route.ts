@@ -64,13 +64,13 @@ export async function GET(request: NextRequest) {
     for (const accountType of typesToCheck) {
       const plugin = pluginManager.getPluginForAccountTypeSync(accountType)
       const moduleName = accountTypeToModuleMap[accountType] || accountType
-      const module = modules.find((m) => m.name === moduleName)
+      const moduleConfig = modules.find((m) => m.name === moduleName)
 
       result[accountType] = {
         accountType,
         pluginName: plugin?.name || null,
-        pluginLabel: module?.label || plugin?.name || null,
-        moduleEnabled: module?.enabled ?? true,
+        pluginLabel: moduleConfig?.label || plugin?.name || null,
+        moduleEnabled: moduleConfig?.enabled ?? true,
         hasCheck: !!plugin?.checkAccount,
         hasCare: !!plugin?.careAccount,
         hasLogin: !!plugin?.loginAccount,

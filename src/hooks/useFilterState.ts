@@ -12,8 +12,6 @@ export function useFilterState<T extends Record<string, any>>(
   storageKey: string,
   defaultFilters: T
 ) {
-  // BUG-6 FIX: Lưu defaultFilters ban đầu trong ref, tránh re-create callbacks 
-  // mỗi lần parent component re-render (vì object literal tạo mới mỗi lần)
   const defaultFiltersRef = useRef<T>(defaultFilters)
 
   // Initialize state from localStorage or defaults
@@ -69,7 +67,6 @@ export function useFilterState<T extends Record<string, any>>(
     }))
   }, [])
 
-  // BUG-6 FIX: dùng ref thay vì closure trực tiếp → stable callback
   const resetFilters = useCallback(() => {
     setFilters(defaultFiltersRef.current)
     try {
@@ -79,7 +76,6 @@ export function useFilterState<T extends Record<string, any>>(
     }
   }, [storageKey])
 
-  // BUG-6 FIX: dùng ref thay vì closure trực tiếp → stable callback
   const clearFilter = useCallback(<K extends keyof T>(key: K) => {
     setFilters((prev) => ({
       ...prev,
