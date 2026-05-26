@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ProfileService } from '@/core/services/ProfileService'
+import { ensureBuiltinConnections } from '@/lib/seedBuiltinConnections'
 
 const profileService = new ProfileService()
 
@@ -8,6 +9,7 @@ const profileService = new ProfileService()
  */
 export async function GET(request: NextRequest) {
   try {
+    await ensureBuiltinConnections()
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status') || undefined
     const search = searchParams.get('search') || undefined
