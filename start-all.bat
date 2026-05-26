@@ -18,14 +18,14 @@ if %errorlevel% neq 0 (
 )
 
 :: Install main dependencies
-if not exist "node_modules\" (
+if not exist "node_modules\next" (
     echo [SETUP] Installing UI dependencies...
     call npm install
     echo.
 )
 
 :: Install agent dependencies
-if not exist "agent\node_modules\" (
+if not exist "agent\node_modules" (
     echo [SETUP] Installing Agent dependencies...
     cd agent
     call npm install
@@ -37,7 +37,10 @@ if not exist "agent\node_modules\" (
 if not exist ".env" (
     echo [SETUP] Creating .env from .env.example...
     copy .env.example .env
-    echo [INFO] Edit .env with your database URL, then save and close.
+    echo.
+    echo [IMPORTANT] Edit .env with your Supabase DATABASE_URL and DIRECT_URL
+    echo            Save the file, then come back here.
+    echo.
     notepad .env
     echo.
 )
@@ -61,18 +64,39 @@ if not exist "agent\.env" (
 )
 
 :: Generate Prisma
-call npx prisma generate >nul 2>nul
+echo [SETUP] Generating Prisma client...
+call npx prisma generate
+if %errorlevel% neq 0 (
+    echo [ERROR] Prisma generate failed! Check your .env DATABASE_URL
+    pause
+    exit /b 1
+)
 
 echo.
-echo [1/2] Starting Agent in background...
+echo [1/3] Building production bundle...
+call npm run build
+if %errorlevel% neq 0 (
+    echo [WARN] Build failed, using dev mode...
+    echo.
+    echo [2/3] Starting Agent in background...
+    start "ProfileOS Agent" cmd /c "cd agent && npm start"
+    echo [3/3] Starting UI dev server...
+    start http://localhost:3211
+    call npm run dev:3211
+    pause
+    exit /b 0
+)
+
+echo.
+echo [2/3] Starting Agent in background...
 start "ProfileOS Agent" cmd /c "cd agent && npm start"
 
-echo [2/2] Starting UI server...
+echo [3/3] Starting UI server...
 echo.
 echo Opening http://localhost:3211 ...
 start http://localhost:3211
 
-:: Start dev server (foreground)
-call npm run dev:3211
+:: Start production server (foreground)
+call npm run start:3211
 
 pause
