@@ -1,10 +1,10 @@
 /**
  * GpmLoginAdapter - Interface for GPMLogin API integration
  * 
- * Implements AUTOMATION_LAYER_SPEC.md interface
  * GPMLogin API Documentation: https://docs.gpmloginapp.com/api-document
- * Default API URL: http://127.0.0.1:19995
+ * API URL configured via GPMLOGIN_API_URL env variable
  */
+import { config } from '@/lib/config'
 
 // Spec-compliant interfaces
 export interface GpmProfileInfo {
@@ -91,7 +91,7 @@ export class GpmLoginAdapter {
 
   constructor(apiUrl?: string, apiVersion?: string) {
     const envUrl = process.env.GPMLOGIN_API_URL || process.env.GPM_API_BASE_URL
-    const rawUrl = normalizeGpmApiUrl(apiUrl || envUrl || 'http://127.0.0.1:19995')
+    const rawUrl = normalizeGpmApiUrl(apiUrl || envUrl || config.gpmLogin.apiUrl)
     this.apiUrl = rawUrl
     this.apiVersion =
       apiVersion !== undefined

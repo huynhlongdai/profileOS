@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { spawn, type ChildProcess } from 'node:child_process'
+import { config } from '@/lib/config'
 
 type AutoRegStatus = {
   running: boolean
@@ -14,7 +15,7 @@ type AutoRegStatus = {
 class AutoRegProcessManager {
   private child: ChildProcess | null = null
   private startedAt: number | null = null
-  private readonly baseUrl = process.env.AUTO_REG_BASE_URL || 'http://127.0.0.1:8000'
+  private readonly baseUrl = config.autoReg.baseUrl
   private readonly projectPath = path.resolve(process.cwd(), 'auto_reg')
   private readonly logFile = path.resolve(process.cwd(), 'active_log.txt')
 

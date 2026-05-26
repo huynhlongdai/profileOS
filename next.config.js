@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Server Actions are enabled by default in Next.js 14+
-  // Exclude Playwright from webpack bundling (server-side only)
+  // Exclude heavy server-side dependencies from webpack bundling
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals = config.externals || []
@@ -10,7 +9,10 @@ const nextConfig = {
     }
     return config
   },
+  // Vercel serverless function config
+  experimental: {
+    serverComponentsExternalPackages: ['playwright'],
+  },
 }
 
 module.exports = nextConfig
-
