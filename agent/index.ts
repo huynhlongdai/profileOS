@@ -3,8 +3,9 @@ import 'dotenv/config'
 const PROFILEOS_URL = process.env.PROFILEOS_URL || 'http://localhost:3000'
 const AGENT_SECRET = process.env.AGENT_SECRET || ''
 const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL || '5000')
+const HEARTBEAT_INTERVAL = parseInt(process.env.HEARTBEAT_INTERVAL || '15000')
+const SYNC_INTERVAL = parseInt(process.env.SYNC_INTERVAL || '60000')
 
-// Browser provider configurations
 const BROWSER_PROVIDERS: Record<string, { apiUrl: string; apiVersion: string }> = {
   gpmlogin: {
     apiUrl: process.env.GPMLOGIN_API_URL || 'http://127.0.0.1:19995',
@@ -14,19 +15,14 @@ const BROWSER_PROVIDERS: Record<string, { apiUrl: string; apiVersion: string }> 
     apiUrl: process.env.GPMGLOBAL_API_URL || 'http://127.0.0.1:9495',
     apiVersion: process.env.GPMGLOBAL_API_VERSION || 'v1',
   },
-  chrome: {
-    apiUrl: '',
-    apiVersion: '',
-  },
-  firefox: {
-    apiUrl: '',
-    apiVersion: '',
-  },
+  chrome: { apiUrl: '', apiVersion: '' },
+  firefox: { apiUrl: '', apiVersion: '' },
 }
 
-// Chrome/Firefox executable paths (auto-detect or manual)
 const CHROME_PATH = process.env.CHROME_PATH || ''
 const FIREFOX_PATH = process.env.FIREFOX_PATH || ''
+
+const AGENT_VERSION = '1.1'
 
 interface AgentTask {
   id: string
@@ -40,7 +36,7 @@ const headers = {
   'Authorization': `Bearer ${AGENT_SECRET}`,
 }
 
-// === GPM API Helpers ===
+// === GPM API ===
 
 function buildGpmUrl(provider: string, path: string): string {
   const config = BROWSER_PROVIDERS[provider] || BROWSER_PROVIDERS.gpmlogin
@@ -49,10 +45,10 @@ function buildGpmUrl(provider: string, path: string): string {
   return version ? `${base}/api/${version}${path}` : `${base}/api${path}`
 }
 
-async function gpmStartProfile(provider: string, profileUid: string): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
+async function gpmStartProfile(provider: string, profileUid: string) {
   try {
     const url = buildGpmUrl(provider, `/profiles/start/${profileUid}`)
-    console.log(`[Agent] ${provider}: Starting profile ${profileUid} via ${url}`)
+    console.log(`[Agent] ${provider}: Starting profile ${profileUid}`)
     const res = await fetch(url)
     const data = await res.json()
     return { success: data.success === true, data }
@@ -61,10 +57,10 @@ async function gpmStartProfile(provider: string, profileUid: string): Promise<{ 
   }
 }
 
-async function gpmStopProfile(provider: string, profileUid: string): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
+async function gpmStopProfile(provider: string, profileUid: string) {
   try {
     const url = buildGpmUrl(provider, `/profiles/close/${profileUid}`)
-    console.log(`[Agent] ${provider}: Stopping profile ${profileUid} via ${url}`)
+    console.log(`[Agent] ${provider}: Stopping profile ${profileUid}`)
     const res = await fetch(url)
     const data = await res.json()
     return { success: data.success === true, data }
@@ -73,92 +69,67 @@ async function gpmStopProfile(provider: string, profileUid: string): Promise<{ s
   }
 }
 
-async function gpmListProfiles(provider: string): Promise<{ success: boolean; profiles?: Record<string, unknown>[]; error?: string }> {
+async function gpmListProfiles(provider: string) {
   try {
-    const url = buildGpmUrl(provider, '/profiles?page=1&per_page=100')
-    const res = await fetch(url)
+    const url = buildGpmUrl(provider, '/profiles?page=1&per_page=500')
+    const res = await fetch(url, { signal: AbortSignal.timeout(10000) })
     const data = await res.json()
     const profiles = data.data || data.profiles || []
     return { success: true, profiles }
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : String(error) }
+    return { success: false, profiles: [], error: error instanceof Error ? error.message : String(error) }
   }
 }
 
-async function gpmTestConnection(provider: string): Promise<{ success: boolean; message: string }> {
+async function gpmTestConnection(provider: string) {
   try {
     const url = buildGpmUrl(provider, '/profiles?page=1&per_page=1')
     const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
-    if (res.ok) {
-      return { success: true, message: `${provider} connected at ${BROWSER_PROVIDERS[provider]?.apiUrl}` }
-    }
+    if (res.ok) return { success: true, message: `${provider} connected at ${BROWSER_PROVIDERS[provider]?.apiUrl}` }
     return { success: false, message: `${provider} returned ${res.status}` }
   } catch (error) {
     return { success: false, message: `${provider} not reachable: ${error instanceof Error ? error.message : String(error)}` }
   }
 }
 
-// === Local Browser Helpers (Chrome/Firefox) ===
+// === Local Browser ===
 
-async function localStartBrowser(browserType: 'chrome' | 'firefox', profilePath: string, executablePath?: string): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
+async function localStartBrowser(browserType: 'chrome' | 'firefox', profilePath: string, executablePath?: string) {
   const { exec } = await import('child_process')
-  const { promisify } = await import('util')
-  const execAsync = promisify(exec)
-
   const debugPort = 9222 + Math.floor(Math.random() * 1000)
 
   try {
     if (browserType === 'chrome') {
-      const chromePath = executablePath || CHROME_PATH || detectChromePath()
-      if (!chromePath) {
-        return { success: false, error: 'Chrome executable not found. Set CHROME_PATH env variable.' }
-      }
-      const cmd = `"${chromePath}" --remote-debugging-port=${debugPort} --user-data-dir="${profilePath}" --no-first-run`
-      console.log(`[Agent] Chrome: Starting with debug port ${debugPort}`)
-      exec(cmd)
+      const chromePath = executablePath || CHROME_PATH || detectPath('chrome')
+      if (!chromePath) return { success: false, error: 'Chrome not found. Set CHROME_PATH.' }
+      exec(`"${chromePath}" --remote-debugging-port=${debugPort} --user-data-dir="${profilePath}" --no-first-run`)
       return { success: true, data: { debugPort, browserType: 'chrome', profilePath } }
     }
-
     if (browserType === 'firefox') {
-      const ffPath = executablePath || FIREFOX_PATH || detectFirefoxPath()
-      if (!ffPath) {
-        return { success: false, error: 'Firefox executable not found. Set FIREFOX_PATH env variable.' }
-      }
-      const cmd = `"${ffPath}" --start-debugger-server ${debugPort} -profile "${profilePath}" --no-remote`
-      console.log(`[Agent] Firefox: Starting with debug port ${debugPort}`)
-      exec(cmd)
+      const ffPath = executablePath || FIREFOX_PATH || detectPath('firefox')
+      if (!ffPath) return { success: false, error: 'Firefox not found. Set FIREFOX_PATH.' }
+      exec(`"${ffPath}" --start-debugger-server ${debugPort} -profile "${profilePath}" --no-remote`)
       return { success: true, data: { debugPort, browserType: 'firefox', profilePath } }
     }
-
-    return { success: false, error: `Unknown browser type: ${browserType}` }
+    return { success: false, error: `Unknown browser: ${browserType}` }
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : String(error) }
   }
 }
 
-function detectChromePath(): string {
-  const { platform } = process
-  if (platform === 'win32') {
-    return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+function detectPath(browser: 'chrome' | 'firefox'): string {
+  const p = process.platform
+  if (browser === 'chrome') {
+    if (p === 'win32') return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+    if (p === 'darwin') return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    return '/usr/bin/google-chrome'
   }
-  if (platform === 'darwin') {
-    return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-  }
-  return '/usr/bin/google-chrome'
-}
-
-function detectFirefoxPath(): string {
-  const { platform } = process
-  if (platform === 'win32') {
-    return 'C:\\Program Files\\Mozilla Firefox\\firefox.exe'
-  }
-  if (platform === 'darwin') {
-    return '/Applications/Firefox.app/Contents/MacOS/firefox'
-  }
+  if (p === 'win32') return 'C:\\Program Files\\Mozilla Firefox\\firefox.exe'
+  if (p === 'darwin') return '/Applications/Firefox.app/Contents/MacOS/firefox'
   return '/usr/bin/firefox'
 }
 
-// === Task Execution ===
+// === Server Communication ===
 
 async function fetchTasks(): Promise<AgentTask[]> {
   try {
@@ -187,6 +158,54 @@ async function updateTask(taskId: string, update: Record<string, unknown>) {
   }
 }
 
+async function sendHeartbeat() {
+  try {
+    const activeProviders = Object.entries(BROWSER_PROVIDERS)
+      .filter(([, c]) => c.apiUrl)
+      .map(([name]) => name)
+
+    await fetch(`${PROFILEOS_URL}/api/agent/status`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        version: AGENT_VERSION,
+        providers: activeProviders,
+        metadata: { pollInterval: POLL_INTERVAL, platform: process.platform },
+      }),
+    })
+  } catch {
+    // Silently ignore heartbeat failures
+  }
+}
+
+async function syncProfiles() {
+  for (const [provider, config] of Object.entries(BROWSER_PROVIDERS)) {
+    if (!config.apiUrl) continue
+
+    const result = await gpmListProfiles(provider)
+    if (!result.success || !result.profiles.length) continue
+
+    try {
+      const res = await fetch(`${PROFILEOS_URL}/api/agent/sync`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          profiles: result.profiles,
+          provider,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        console.log(`[Agent] Synced ${provider}: ${data.synced} new, ${data.updated} updated (${data.total} total)`)
+      }
+    } catch (error) {
+      console.error(`[Agent] Sync error for ${provider}:`, error)
+    }
+  }
+}
+
+// === Task Execution ===
+
 async function executeTask(task: AgentTask) {
   console.log(`[Agent] Executing task ${task.id}`)
   await updateTask(task.id, { status: 'running' })
@@ -204,7 +223,6 @@ async function executeTask(task: AgentTask) {
       return
     }
 
-    // Start profile — route to correct provider
     if (actions.type === 'start_profile') {
       if (provider === 'chrome' || provider === 'firefox') {
         const result = await localStartBrowser(provider, actions.profilePath, actions.executablePath)
@@ -214,7 +232,6 @@ async function executeTask(task: AgentTask) {
           error: result.error,
         })
       } else {
-        // GPMLogin or GPMGlobal
         const result = await gpmStartProfile(provider, actions.profileUid)
         await updateTask(task.id, {
           status: result.success ? 'completed' : 'failed',
@@ -225,10 +242,8 @@ async function executeTask(task: AgentTask) {
       return
     }
 
-    // Stop profile
     if (actions.type === 'stop_profile') {
       if (provider === 'chrome' || provider === 'firefox') {
-        // For local browsers, we'd need to track the PID — for now just mark done
         await updateTask(task.id, {
           status: 'completed',
           resultJson: JSON.stringify({ message: `${provider} stop not yet implemented` }),
@@ -244,18 +259,15 @@ async function executeTask(task: AgentTask) {
       return
     }
 
-    // List profiles from a provider
-    if (actions.type === 'list_profiles') {
-      const result = await gpmListProfiles(provider)
+    if (actions.type === 'sync_profiles') {
+      await syncProfiles()
       await updateTask(task.id, {
-        status: result.success ? 'completed' : 'failed',
-        resultJson: JSON.stringify(result.profiles || []),
-        error: result.error,
+        status: 'completed',
+        resultJson: JSON.stringify({ message: 'Sync completed' }),
       })
       return
     }
 
-    // Test connection to a provider
     if (actions.type === 'test_connection') {
       const result = await gpmTestConnection(provider)
       await updateTask(task.id, {
@@ -266,7 +278,6 @@ async function executeTask(task: AgentTask) {
       return
     }
 
-    // Default: mark as completed
     await updateTask(task.id, {
       status: 'completed',
       resultJson: JSON.stringify({ message: 'Task processed', type: actions.type }),
@@ -280,13 +291,13 @@ async function executeTask(task: AgentTask) {
   }
 }
 
-// === Startup ===
+// === Main Loop ===
 
 async function testProviders() {
-  console.log('[Agent] Testing browser provider connections...')
+  console.log('[Agent] Testing connections...')
   for (const [name, config] of Object.entries(BROWSER_PROVIDERS)) {
     if (!config.apiUrl) {
-      console.log(`[Agent]   ${name}: local browser (no API)`)
+      console.log(`[Agent]   ${name}: local browser`)
       continue
     }
     const result = await gpmTestConnection(name)
@@ -294,11 +305,11 @@ async function testProviders() {
   }
 }
 
-async function pollLoop() {
-  console.log(`[Agent] ProfileOS Local Agent v1.1`)
+async function main() {
+  console.log(`[Agent] ProfileOS Local Agent v${AGENT_VERSION}`)
   console.log(`[Agent] Server: ${PROFILEOS_URL}`)
-  console.log(`[Agent] Poll interval: ${POLL_INTERVAL}ms`)
-  console.log(`[Agent] Providers:`)
+  console.log(`[Agent] Poll: ${POLL_INTERVAL}ms | Heartbeat: ${HEARTBEAT_INTERVAL}ms | Sync: ${SYNC_INTERVAL}ms`)
+
   for (const [name, config] of Object.entries(BROWSER_PROVIDERS)) {
     if (config.apiUrl) {
       console.log(`[Agent]   ${name}: ${config.apiUrl} (API ${config.apiVersion || 'default'})`)
@@ -306,23 +317,28 @@ async function pollLoop() {
       console.log(`[Agent]   ${name}: local browser`)
     }
   }
-  console.log('')
 
   await testProviders()
-  console.log('')
+  await sendHeartbeat()
+  await syncProfiles()
 
+  // Heartbeat loop
+  setInterval(sendHeartbeat, HEARTBEAT_INTERVAL)
+
+  // Auto-sync loop
+  setInterval(syncProfiles, SYNC_INTERVAL)
+
+  // Task polling loop
   while (true) {
     const tasks = await fetchTasks()
-
     if (tasks.length > 0) {
       console.log(`[Agent] Found ${tasks.length} pending task(s)`)
       for (const task of tasks) {
         await executeTask(task)
       }
     }
-
     await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL))
   }
 }
 
-pollLoop().catch(console.error)
+main().catch(console.error)

@@ -484,3 +484,13 @@ model AutomationExecution {
   @@index([createdAt])
 }
 
+model AgentHeartbeat {
+  id           String   @id @default("default")
+  agentVersion String   @default("1.0")
+  providers    String?  // JSON array of provider names
+  lastSeen     DateTime @default(now())
+  isOnline     Boolean  @default(false)
+  metadata     String?  // JSON with extra agent info
+  updatedAt    DateTime @updatedAt
+}
+
