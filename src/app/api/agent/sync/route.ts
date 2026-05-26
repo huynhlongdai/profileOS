@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateAgentAuth } from '@/lib/agent/auth'
 import { prisma } from '@/lib/prisma'
+import { ensureBuiltinConnections } from '@/lib/seedBuiltinConnections'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,7 +39,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    await ensureBuiltinConnections()
     const browserProvider = provider || 'gpmlogin'
+    const defaultConnId = browserProvider === 'gpmlogin_global' ? 'global-gpm' : 'local-gpm'
+    const resolvedConnectionId = connectionId || defaultConnId
     let synced = 0
 
     for (const p of profiles) {
@@ -53,7 +57,7 @@ export async function POST(req: NextRequest) {
             groupId: p.group_id || null,
             browserType: normalizeBrowserType(p.browser_type),
             browserProvider,
-            browserConnectionId: connectionId || null,
+            browserConnectionId: resolvedConnectionId,
             status: 'idle',
           },
         })
@@ -65,7 +69,7 @@ export async function POST(req: NextRequest) {
             name: p.name || existing.name,
             groupId: p.group_id ?? existing.groupId,
             browserProvider: browserProvider,
-            browserConnectionId: connectionId || existing.browserConnectionId,
+            browserConnectionId: existing.browserConnectionId || resolvedConnectionId,
           },
         })
       }
