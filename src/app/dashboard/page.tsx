@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { useToastContext } from '@/components/ToastProvider'
+import { Users, Globe, Shield, Zap, RefreshCw, Activity, BarChart3 } from 'lucide-react'
+import { StatCard } from '@/components/ui/Card'
+import Card, { CardHeader } from '@/components/ui/Card'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
+import Tabs from '@/components/ui/Tabs'
+import { SkeletonCard } from '@/components/ui/Skeleton'
 import ActivityChart from '@/components/dashboard/ActivityChart'
 import AccountTypesChart from '@/components/dashboard/AccountTypesChart'
 import SmartAlerts from '@/components/dashboard/SmartAlerts'
@@ -41,23 +48,67 @@ interface Stats {
     cancelled: number
   }
   logs24h: number
-  timeline: { date: string, count: number }[]
-  inactiveAccounts: any[]
-  bannedAccounts: any[]
-  deadProxies: any[]
+  timeline: { date: string; count: number }[]
+  inactiveAccounts: { id: string; label: string; accountType: string; lastCare: string | null; createdAt: string }[]
+  bannedAccounts: { id: string; label: string; accountType: string; status: string }[]
+  deadProxies: { id: string; label: string; rawProxy: string; status: string }[]
 }
 
 type TabKey = 'accounts' | 'profiles' | 'proxies' | 'executions'
 
+const tabDetailConfigs: Record<TabKey, { label: string; color: string }[]> = {
+  accounts: [
+    { label: 'Active', color: 'text-emerald-400' },
+    { label: 'Logged Out', color: 'text-amber-400' },
+    { label: 'Error', color: 'text-red-400' },
+    { label: 'Proxy Error', color: 'text-orange-400' },
+    { label: 'Banned', color: 'text-red-500' },
+  ],
+  profiles: [
+    { label: 'Running', color: 'text-indigo-400' },
+    { label: 'Idle', color: 'text-gray-400' },
+    { label: 'Starting', color: 'text-blue-400' },
+    { label: 'Stopping', color: 'text-amber-400' },
+    { label: 'Error', color: 'text-red-400' },
+  ],
+  proxies: [
+    { label: 'Active', color: 'text-emerald-400' },
+    { label: 'Checking', color: 'text-indigo-400' },
+    { label: 'Error', color: 'text-orange-400' },
+    { label: 'Dead', color: 'text-red-400' },
+  ],
+  executions: [
+    { label: 'Completed', color: 'text-emerald-400' },
+    { label: 'Running', color: 'text-indigo-400' },
+    { label: 'Pending', color: 'text-amber-400' },
+    { label: 'Failed', color: 'text-red-400' },
+    { label: 'Cancelled', color: 'text-gray-500' },
+  ],
+}
+
+function getTabValues(stats: Stats, tab: TabKey): number[] {
+  switch (tab) {
+    case 'accounts':
+      return [stats.accounts.active, stats.accounts.logged_out, stats.accounts.error, stats.accounts.proxy_error, stats.accounts.banned]
+    case 'profiles':
+      return [stats.profiles.running, stats.profiles.idle, stats.profiles.starting, stats.profiles.stopping, stats.profiles.error]
+    case 'proxies':
+      return [stats.proxies.active, stats.proxies.checking, stats.proxies.error, stats.proxies.dead]
+    case 'executions':
+      return [stats.executions.completed, stats.executions.running, stats.executions.pending, stats.executions.failed, stats.executions.cancelled]
+  }
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [activeTab, setActiveTab] = useState<TabKey>('accounts')
   const { showToast } = useToastContext()
 
   useEffect(() => {
     fetchStats()
-    const interval = setInterval(fetchStats, 30000) // Refresh every 30s
+    const interval = setInterval(fetchStats, 30000)
     return () => clearInterval(interval)
   }, [])
 
@@ -65,204 +116,106 @@ export default function DashboardPage() {
     try {
       const res = await fetch('/api/stats')
       const data = await res.json()
-      if (data.success) {
-        setStats(data.stats)
-      } else {
-        showToast('Error loading stats', 'error')
-      }
-    } catch (error) {
-      console.error('Error fetching stats:', error)
+      if (data.success) setStats(data.stats)
+      else showToast('Error loading stats', 'error')
+    } catch {
       showToast('Error loading stats', 'error')
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
+  }
+
+  const handleRefresh = () => {
+    setRefreshing(true)
+    fetchStats()
   }
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--accent)' }}></div>
-        <p className="mt-2" style={{ color: 'var(--text-muted)' }}>Loading insight data...</p>
+      <div className="space-y-6 animate-fade-in">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
+        </div>
       </div>
     )
   }
 
   if (!stats) {
     return (
-      <div className="text-center py-12">
-        <p className="text-red-600">Error loading dashboard data</p>
-        <button
-          onClick={fetchStats}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          Retry
-        </button>
+      <div className="flex flex-col items-center justify-center py-20">
+        <p className="text-red-400 text-sm mb-4">Error loading dashboard data</p>
+        <Button onClick={fetchStats}>Retry</Button>
       </div>
     )
   }
 
-  // Helper for Tabs
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'accounts':
-        return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 py-2">
-            {[
-              { label: 'Active', val: stats.accounts.active, color: 'var(--success)' },
-              { label: 'Logged Out', val: stats.accounts.logged_out, color: 'var(--warning)' },
-              { label: 'Error', val: stats.accounts.error, color: 'var(--error)' },
-              { label: 'Proxy Error', val: stats.accounts.proxy_error, color: 'orange' },
-              { label: 'Banned', val: stats.accounts.banned, color: 'red' },
-            ].map(item => (
-              <div key={item.label} className="flex justify-between items-center text-sm py-1 border-b border-dashed border-gray-100 last:border-0" style={{ borderColor: 'var(--border-color)' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
-                <span className="font-semibold" style={{ color: item.color }}>{item.val}</span>
-              </div>
-            ))}
-          </div>
-        )
-      case 'profiles':
-        return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 py-2">
-            {[
-              { label: 'Running', val: stats.profiles.running, color: 'var(--accent)' },
-              { label: 'Idle', val: stats.profiles.idle, color: 'var(--text-muted)' },
-              { label: 'Starting', val: stats.profiles.starting, color: 'indigo' },
-              { label: 'Stopping', val: stats.profiles.stopping, color: 'orange' },
-              { label: 'Error', val: stats.profiles.error, color: 'var(--error)' },
-            ].map(item => (
-              <div key={item.label} className="flex justify-between items-center text-sm py-1 border-b border-dashed border-gray-100 last:border-0" style={{ borderColor: 'var(--border-color)' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
-                <span className="font-semibold" style={{ color: item.color }}>{item.val}</span>
-              </div>
-            ))}
-          </div>
-        )
-      case 'proxies':
-        return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 py-2">
-            {[
-              { label: 'Active', val: stats.proxies.active, color: 'var(--success)' },
-              { label: 'Checking', val: stats.proxies.checking, color: 'var(--accent)' },
-              { label: 'Error', val: stats.proxies.error, color: 'orange' },
-              { label: 'Dead', val: stats.proxies.dead, color: 'var(--error)' },
-            ].map(item => (
-              <div key={item.label} className="flex justify-between items-center text-sm py-1 border-b border-dashed border-gray-100 last:border-0" style={{ borderColor: 'var(--border-color)' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
-                <span className="font-semibold" style={{ color: item.color }}>{item.val}</span>
-              </div>
-            ))}
-          </div>
-        )
-      case 'executions':
-        return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 py-2">
-            {[
-              { label: 'Completed', val: stats.executions.completed, color: 'var(--success)' },
-              { label: 'Running', val: stats.executions.running, color: 'var(--accent)' },
-              { label: 'Pending', val: stats.executions.pending, color: 'var(--warning)' },
-              { label: 'Failed', val: stats.executions.failed, color: 'var(--error)' },
-              { label: 'Cancelled', val: stats.executions.cancelled, color: 'var(--text-muted)' },
-            ].map(item => (
-              <div key={item.label} className="flex justify-between items-center text-sm py-1 border-b border-dashed border-gray-100 last:border-0" style={{ borderColor: 'var(--border-color)' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
-                <span className="font-semibold" style={{ color: item.color }}>{item.val}</span>
-              </div>
-            ))}
-          </div>
-        )
-    }
-  }
+  const tabsList = [
+    { key: 'accounts', label: 'Accounts', count: stats.accounts.total },
+    { key: 'profiles', label: 'Profiles', count: stats.profiles.total },
+    { key: 'proxies', label: 'Proxies', count: stats.proxies.total },
+    { key: 'executions', label: 'Tasks', count: stats.executions.total },
+  ]
+
+  const detailConfigs = tabDetailConfigs[activeTab]
+  const detailValues = getTabValues(stats, activeTab)
 
   return (
-    <div className="max-w-[1600px] mx-auto pb-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Dashboard Overview</h1>
-        <button
-          onClick={fetchStats}
-          className="px-4 py-2 rounded-md transition-colors text-sm font-medium border"
-          style={{ 
-            backgroundColor: 'var(--bg-surface)', 
-            color: 'var(--text-primary)',
-            borderColor: 'var(--border-color)'
-          }}
-        >
-          🔄 Refresh
-        </button>
+    <div className="space-y-5 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>System overview and monitoring</p>
+        </div>
+        <Button variant="secondary" size="sm" onClick={handleRefresh} loading={refreshing}>
+          <RefreshCw size={14} />
+          <span className="hidden sm:inline">Refresh</span>
+        </Button>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-        {[
-          { label: 'Total Accounts', val: stats.accounts.total, sub: `${stats.accounts.active} active`, subColor: 'var(--success)' },
-          { label: 'Total Proxies', val: stats.proxies.total, sub: `${stats.proxies.active} active`, subColor: 'var(--success)' },
-          { label: 'Total Profiles', val: stats.profiles.total, sub: `${stats.profiles.running} running`, subColor: 'var(--accent)' },
-          { label: 'Logs (24h)', val: stats.logs24h, sub: 'System events', subColor: 'var(--text-muted)' },
-        ].map((kpi, idx) => (
-          <div key={idx} className="overflow-hidden shadow-sm rounded-xl border flex flex-col" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
-            <div className="p-4 flex-1 flex flex-col justify-center">
-              <div className="flex items-center">
-                <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{kpi.val}</div>
-                <div className="ml-4 w-0 flex-1">
-                  <div className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{kpi.label}</div>
-                  <div className="text-sm font-semibold" style={{ color: kpi.subColor }}>{kpi.sub}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard
+          label="Accounts"
+          value={stats.accounts.total}
+          icon={<Users size={16} />}
+          variant={stats.accounts.error > 0 ? 'warning' : 'default'}
+        />
+        <StatCard
+          label="Profiles"
+          value={stats.profiles.total}
+          icon={<Globe size={16} />}
+          variant={stats.profiles.running > 0 ? 'success' : 'default'}
+        />
+        <StatCard
+          label="Proxies"
+          value={stats.proxies.total}
+          icon={<Shield size={16} />}
+          variant={stats.proxies.dead > 0 ? 'error' : 'default'}
+        />
+        <StatCard
+          label="Tasks (24h)"
+          value={stats.logs24h}
+          icon={<Zap size={16} />}
+        />
       </div>
 
-      {/* Main Layout: Charts (2/3) and Secondary Panel (1/3) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* Left Column: Expanded Charts Array */}
-        <div className="lg:col-span-2 space-y-6 flex flex-col">
-          {/* Main Activity Chart - Expanded */}
-          <div className="shadow-sm rounded-xl border p-4 flex flex-col flex-1 min-h-[300px]" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
-            <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-secondary)' }}>Activity Trend (7 Days)</h2>
-            <div className="flex-1 w-full" style={{ minHeight: '220px' }}>
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Activity Chart */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader title="Activity Trend" description="Last 7 days" action={<Activity size={16} style={{ color: 'var(--text-muted)' }} />} />
+            <div className="h-[220px] sm:h-[260px]">
               <ActivityChart data={stats.timeline} />
             </div>
-          </div>
-
-          {/* Lower Chart Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Account Types Donut Chart */}
-            <div className="shadow-sm rounded-xl border p-4 flex flex-col min-h-[260px]" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
-              <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-secondary)' }}>Account Distribution</h2>
-              <div className="flex-1 w-full">
-                <AccountTypesChart data={stats.accounts.byType} />
-              </div>
-            </div>
-
-            {/* Dashboard Details Manager - Tabs */}
-            <div className="shadow-sm rounded-xl border p-4 flex flex-col min-h-[260px]" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
-              <h2 className="text-sm font-semibold uppercase tracking-wider mb-3 flex justify-between items-center" style={{ color: 'var(--text-secondary)' }}>
-                System Details Menu
-              </h2>
-              {/* Custom Tab Header */}
-              <div className="flex space-x-1 mb-3 bg-gray-100 dark:bg-[#1a1a1a] p-1 rounded-lg" style={{ backgroundColor: 'var(--bg-surface-2)' }}>
-                {(['accounts', 'profiles', 'proxies', 'executions'] as TabKey[]).map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 text-[10px] font-medium py-1.5 px-1 rounded-md capitalize transition-all ${activeTab === tab ? 'bg-white shadow-sm dark:bg-[#2d2d2d] text-indigo-600 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-              {/* Tab Content */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
-                {renderTabContent()}
-              </div>
-            </div>
-          </div>
+          </Card>
         </div>
 
-        {/* Right Column: Alerts */}
-        <div className="lg:col-span-1 flex flex-col h-full">
-          <SmartAlerts 
+        {/* Smart Alerts */}
+        <div className="lg:col-span-1">
+          <SmartAlerts
             inactiveAccounts={stats.inactiveAccounts}
             bannedAccounts={stats.bannedAccounts}
             deadProxies={stats.deadProxies}
@@ -270,6 +223,32 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Bottom Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {/* Account Distribution */}
+        <Card>
+          <CardHeader title="Account Distribution" action={<BarChart3 size={16} style={{ color: 'var(--text-muted)' }} />} />
+          <div className="h-[200px]">
+            <AccountTypesChart data={stats.accounts.byType} />
+          </div>
+        </Card>
+
+        {/* System Details */}
+        <Card>
+          <CardHeader title="System Details" />
+          <Tabs tabs={tabsList} active={activeTab} onChange={(k) => setActiveTab(k as TabKey)} />
+          <div className="mt-3 space-y-1.5">
+            {detailConfigs.map((item, i) => (
+              <div key={item.label} className="flex items-center justify-between py-1.5 border-b last:border-0" style={{ borderColor: 'var(--border-color)' }}>
+                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
+                <Badge variant={detailValues[i] > 0 ? 'default' : 'muted'}>
+                  <span className={item.color}>{detailValues[i]}</span>
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }
