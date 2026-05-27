@@ -17,15 +17,37 @@ import Badge from '@/components/ui/Badge'
 // ============ Types ============
 
 type WorkflowActionType =
-  | 'go_to_url' | 'new_tab' | 'close_tab' | 'reload' | 'back' | 'wait_url_changed'
+  // Navigation
+  | 'go_to_url' | 'new_tab' | 'close_tab' | 'reload' | 'back' | 'forward' | 'wait_url_changed' | 'get_url' | 'active_tab'
+  // Mouse
   | 'click' | 'double_click' | 'right_click' | 'hover' | 'scroll' | 'try_click'
+  | 'click_coordinates' | 'drag_and_drop' | 'random_scroll' | 'scroll_to_element'
+  // Keyboard
   | 'type' | 'key_press' | 'select_dropdown' | 'file_upload'
-  | 'wait_element' | 'get_text' | 'get_attribute' | 'count_elements'
-  | 'delay' | 'screenshot' | 'execute_js' | 'http_request'
-  | 'set_variable' | 'if_condition' | 'for_loop' | 'while_loop'
-  | 'get_2fa' | 'cookie_import' | 'cookie_export'
+  // Element
+  | 'wait_element' | 'get_text' | 'get_attribute' | 'count_elements' | 'element_exists'
+  // Control Flow
+  | 'delay' | 'if_condition' | 'for_loop' | 'while_loop' | 'break_loop' | 'continue_loop' | 'try_catch'
+  // Data & Variables
+  | 'set_variable' | 'increment_variable' | 'math_execute' | 'random_number' | 'random_text'
+  // String Operations
+  | 'split_text' | 'regex_extract' | 'parse_json'
+  // Code & HTTP
+  | 'execute_js' | 'http_request' | 'http_download'
+  // Screenshot & Log
+  | 'screenshot' | 'log'
+  // Alert
+  | 'accept_alert' | 'dismiss_alert'
+  // Cookie
+  | 'cookie_import' | 'cookie_export'
+  // Clipboard
+  | 'get_clipboard' | 'set_clipboard'
+  // Frame/Popup
   | 'switch_to_frame' | 'switch_to_default' | 'switch_to_popup'
-  | 'log'
+  // Advanced
+  | 'get_2fa' | 'read_mail_otp'
+  // AI
+  | 'ai_generate'
 
 interface WorkflowStep {
   id: string
@@ -95,8 +117,11 @@ const ACTION_CATEGORIES = [
       { type: 'go_to_url' as const, label: 'Go to URL', icon: Globe, desc: 'Navigate to a URL' },
       { type: 'new_tab' as const, label: 'New Tab', icon: Plus, desc: 'Open new tab' },
       { type: 'close_tab' as const, label: 'Close Tab', icon: X, desc: 'Close current tab' },
+      { type: 'active_tab' as const, label: 'Active Tab', icon: ExternalLink, desc: 'Switch to tab by index' },
       { type: 'reload' as const, label: 'Reload', icon: Repeat, desc: 'Reload page' },
       { type: 'back' as const, label: 'Back', icon: ArrowUp, desc: 'Go back' },
+      { type: 'forward' as const, label: 'Forward', icon: ArrowDown, desc: 'Go forward' },
+      { type: 'get_url' as const, label: 'Get URL', icon: Globe, desc: 'Get current page URL' },
       { type: 'wait_url_changed' as const, label: 'Wait URL Change', icon: Clock, desc: 'Wait for URL change' },
     ],
   },
@@ -109,7 +134,11 @@ const ACTION_CATEGORIES = [
       { type: 'double_click' as const, label: 'Double Click', icon: MousePointer, desc: 'Double click element' },
       { type: 'right_click' as const, label: 'Right Click', icon: MousePointer, desc: 'Right click element' },
       { type: 'hover' as const, label: 'Hover', icon: MousePointer, desc: 'Hover over element' },
+      { type: 'click_coordinates' as const, label: 'Click XY', icon: MousePointer, desc: 'Click at screen coordinates' },
+      { type: 'drag_and_drop' as const, label: 'Drag & Drop', icon: GripVertical, desc: 'Drag from one element to another' },
       { type: 'scroll' as const, label: 'Scroll', icon: ArrowDown, desc: 'Scroll page' },
+      { type: 'random_scroll' as const, label: 'Random Scroll', icon: ArrowDown, desc: 'Scroll random amount' },
+      { type: 'scroll_to_element' as const, label: 'Scroll to Element', icon: Eye, desc: 'Scroll element into view' },
       { type: 'try_click' as const, label: 'Try Click', icon: Repeat, desc: 'Click until condition met' },
     ],
   },
@@ -130,6 +159,7 @@ const ACTION_CATEGORIES = [
     color: 'text-purple-400',
     actions: [
       { type: 'wait_element' as const, label: 'Wait Element', icon: Clock, desc: 'Wait for element to appear' },
+      { type: 'element_exists' as const, label: 'Element Exists', icon: Eye, desc: 'Check if element exists (no error)' },
       { type: 'get_text' as const, label: 'Get Text', icon: FileText, desc: 'Get element text content' },
       { type: 'get_attribute' as const, label: 'Get Attribute', icon: Code, desc: 'Get element attribute' },
       { type: 'count_elements' as const, label: 'Count Elements', icon: Eye, desc: 'Count matching elements' },
@@ -143,19 +173,74 @@ const ACTION_CATEGORIES = [
       { type: 'if_condition' as const, label: 'If Condition', icon: GitBranch, desc: 'Conditional branch' },
       { type: 'for_loop' as const, label: 'For Loop', icon: Repeat, desc: 'Loop N times' },
       { type: 'while_loop' as const, label: 'While Loop', icon: Repeat, desc: 'Loop until condition' },
+      { type: 'try_catch' as const, label: 'Try / Catch', icon: Shield, desc: 'Try block, catch errors' },
+      { type: 'break_loop' as const, label: 'Break Loop', icon: X, desc: 'Exit current loop' },
+      { type: 'continue_loop' as const, label: 'Continue Loop', icon: Repeat, desc: 'Skip to next iteration' },
       { type: 'delay' as const, label: 'Delay', icon: Clock, desc: 'Wait for time' },
     ],
   },
   {
-    label: 'Data',
+    label: 'Data & Variables',
     icon: Variable,
     color: 'text-cyan-400',
     actions: [
       { type: 'set_variable' as const, label: 'Set Variable', icon: Variable, desc: 'Set a variable value' },
+      { type: 'increment_variable' as const, label: 'Increment', icon: Plus, desc: 'Increase variable by amount' },
+      { type: 'math_execute' as const, label: 'Math', icon: Code, desc: 'Math expression (+-*/%)' },
+      { type: 'random_number' as const, label: 'Random Number', icon: Zap, desc: 'Generate random number' },
+      { type: 'random_text' as const, label: 'Random Text', icon: FileText, desc: 'Generate random string' },
+    ],
+  },
+  {
+    label: 'Text Operations',
+    icon: FileText,
+    color: 'text-teal-400',
+    actions: [
+      { type: 'split_text' as const, label: 'Split Text', icon: FileText, desc: 'Split text by delimiter' },
+      { type: 'regex_extract' as const, label: 'Regex Extract', icon: Code, desc: 'Extract with regex' },
+      { type: 'parse_json' as const, label: 'Parse JSON', icon: Code, desc: 'Parse JSON and extract value' },
+    ],
+  },
+  {
+    label: 'Code & HTTP',
+    icon: Code,
+    color: 'text-indigo-400',
+    actions: [
       { type: 'execute_js' as const, label: 'Execute JS', icon: Code, desc: 'Run JavaScript code' },
       { type: 'http_request' as const, label: 'HTTP Request', icon: Globe, desc: 'Send HTTP request' },
+      { type: 'http_download' as const, label: 'HTTP Download', icon: Download, desc: 'Download file from URL' },
       { type: 'screenshot' as const, label: 'Screenshot', icon: Image, desc: 'Take screenshot' },
       { type: 'log' as const, label: 'Log', icon: FileText, desc: 'Log a message' },
+    ],
+  },
+  {
+    label: 'Alert & Dialog',
+    icon: AlertTriangle,
+    color: 'text-amber-400',
+    actions: [
+      { type: 'accept_alert' as const, label: 'Accept Alert', icon: CheckCircle, desc: 'Accept/OK alert dialog' },
+      { type: 'dismiss_alert' as const, label: 'Dismiss Alert', icon: XCircle, desc: 'Cancel/dismiss alert dialog' },
+    ],
+  },
+  {
+    label: 'Cookie & Clipboard',
+    icon: Shield,
+    color: 'text-rose-400',
+    actions: [
+      { type: 'cookie_import' as const, label: 'Import Cookie', icon: Download, desc: 'Import cookies from JSON' },
+      { type: 'cookie_export' as const, label: 'Export Cookie', icon: Upload, desc: 'Export cookies to variable' },
+      { type: 'get_clipboard' as const, label: 'Get Clipboard', icon: Copy, desc: 'Read clipboard text' },
+      { type: 'set_clipboard' as const, label: 'Set Clipboard', icon: Copy, desc: 'Write text to clipboard' },
+    ],
+  },
+  {
+    label: 'Frame & Popup',
+    icon: ExternalLink,
+    color: 'text-sky-400',
+    actions: [
+      { type: 'switch_to_frame' as const, label: 'Switch to Frame', icon: ExternalLink, desc: 'Switch to iframe' },
+      { type: 'switch_to_default' as const, label: 'Switch to Default', icon: ExternalLink, desc: 'Switch back to main' },
+      { type: 'switch_to_popup' as const, label: 'Switch to Popup', icon: ExternalLink, desc: 'Switch to popup window' },
     ],
   },
   {
@@ -163,12 +248,9 @@ const ACTION_CATEGORIES = [
     icon: Shield,
     color: 'text-pink-400',
     actions: [
-      { type: 'get_2fa' as const, label: '2FA Code', icon: Shield, desc: 'Get TOTP 2FA code' },
-      { type: 'cookie_import' as const, label: 'Import Cookie', icon: Download, desc: 'Import cookies' },
-      { type: 'cookie_export' as const, label: 'Export Cookie', icon: Upload, desc: 'Export cookies' },
-      { type: 'switch_to_frame' as const, label: 'Switch to Frame', icon: ExternalLink, desc: 'Switch to iframe' },
-      { type: 'switch_to_default' as const, label: 'Switch to Default', icon: ExternalLink, desc: 'Switch back to main' },
-      { type: 'switch_to_popup' as const, label: 'Switch to Popup', icon: ExternalLink, desc: 'Switch to popup window' },
+      { type: 'get_2fa' as const, label: '2FA Code', icon: Shield, desc: 'Generate TOTP 2FA code' },
+      { type: 'read_mail_otp' as const, label: 'Read Mail OTP', icon: Mail, desc: 'Read OTP from email' },
+      { type: 'ai_generate' as const, label: 'AI Chat', icon: Zap, desc: 'Call AI (ChatGPT) for text generation' },
     ],
   },
 ]
@@ -177,41 +259,78 @@ const ACTION_CATEGORIES = [
 
 function getDefaultParams(action: WorkflowActionType): Record<string, string | number | boolean> {
   switch (action) {
+    // Navigation
     case 'go_to_url': return { url: 'https://' }
     case 'new_tab': return { url: '' }
     case 'close_tab': return {}
+    case 'active_tab': return { tabIndex: 0 }
     case 'reload': return {}
     case 'back': return {}
+    case 'forward': return {}
+    case 'get_url': return { saveAs: 'currentUrl' }
     case 'wait_url_changed': return { timeout: 10000 }
+    // Mouse
     case 'click': return { xpath: '', timeout: 5000 }
     case 'double_click': return { xpath: '', timeout: 5000 }
     case 'right_click': return { xpath: '', timeout: 5000 }
     case 'hover': return { xpath: '' }
+    case 'click_coordinates': return { x: 0, y: 0 }
+    case 'drag_and_drop': return { fromXpath: '', toXpath: '' }
     case 'scroll': return { direction: 'down', amount: 300 }
-    case 'try_click': return { xpath: '', maxTries: 5, delayMs: 1000, stopCondition: '' }
+    case 'random_scroll': return { minAmount: 100, maxAmount: 500, direction: 'down' }
+    case 'scroll_to_element': return { xpath: '' }
+    case 'try_click': return { xpath: '', maxTries: 5, delayMs: 1000 }
+    // Keyboard
     case 'type': return { xpath: '', text: '', clearFirst: true }
     case 'key_press': return { key: 'Enter' }
     case 'select_dropdown': return { xpath: '', value: '' }
     case 'file_upload': return { xpath: "//input[@type='file']", filePath: '' }
+    // Element
     case 'wait_element': return { xpath: '', timeout: 10000 }
+    case 'element_exists': return { xpath: '', saveAs: 'exists', timeout: 3000 }
     case 'get_text': return { xpath: '', saveAs: '' }
     case 'get_attribute': return { xpath: '', attribute: 'href', saveAs: '' }
     case 'count_elements': return { xpath: '', saveAs: '' }
+    // Control Flow
     case 'delay': return { ms: 1000 }
-    case 'screenshot': return { saveAs: 'screenshot.png' }
-    case 'execute_js': return { code: '' }
-    case 'http_request': return { method: 'GET', url: '', body: '', saveAs: '', useProfileProxy: false }
-    case 'set_variable': return { name: '', value: '' }
     case 'if_condition': return { left: '', operator: '=', right: '' }
     case 'for_loop': return { count: 5, variable: 'i' }
     case 'while_loop': return { condition: '', maxIterations: 100 }
-    case 'get_2fa': return { secretKey: '', saveAs: 'code2fa' }
-    case 'cookie_import': return { filePath: '' }
-    case 'cookie_export': return { filePath: '' }
+    case 'try_catch': return {}
+    case 'break_loop': return {}
+    case 'continue_loop': return {}
+    // Data & Variables
+    case 'set_variable': return { name: '', value: '' }
+    case 'increment_variable': return { name: '', amount: 1 }
+    case 'math_execute': return { expression: '', saveAs: 'mathResult' }
+    case 'random_number': return { min: 1, max: 100, saveAs: 'randomNum' }
+    case 'random_text': return { length: 8, charset: 'alphanumeric', saveAs: 'randomText' }
+    // Text Operations
+    case 'split_text': return { text: '', delimiter: ',', index: 0, saveAs: 'splitResult' }
+    case 'regex_extract': return { text: '', pattern: '', group: 0, saveAs: 'regexResult' }
+    case 'parse_json': return { json: '', path: '', saveAs: 'jsonValue' }
+    // Code & HTTP
+    case 'execute_js': return { code: '' }
+    case 'http_request': return { method: 'GET', url: '', body: '', headers: '', saveAs: '', useProfileProxy: false }
+    case 'http_download': return { url: '', savePath: '' }
+    case 'screenshot': return { saveAs: 'screenshot.png' }
+    case 'log': return { message: '', level: 'info' }
+    // Alert
+    case 'accept_alert': return {}
+    case 'dismiss_alert': return {}
+    // Cookie & Clipboard
+    case 'cookie_import': return { cookies: '' }
+    case 'cookie_export': return { saveAs: 'cookies' }
+    case 'get_clipboard': return { saveAs: 'clipboard' }
+    case 'set_clipboard': return { text: '' }
+    // Frame & Popup
     case 'switch_to_frame': return { xpath: '//iframe' }
     case 'switch_to_default': return {}
     case 'switch_to_popup': return { title: '' }
-    case 'log': return { message: '', level: 'info' }
+    // Advanced
+    case 'get_2fa': return { secretKey: '', saveAs: 'code2fa' }
+    case 'read_mail_otp': return { email: '', password: '', imapHost: 'imap.gmail.com', searchSubject: '', saveAs: 'otpCode' }
+    case 'ai_generate': return { prompt: '', model: 'gpt-3.5-turbo', apiKey: '', saveAs: 'aiResponse' }
     default: return {}
   }
 }
@@ -240,7 +359,7 @@ function getActionColor(action: WorkflowActionType): string {
 }
 
 const hasChildren = (action: WorkflowActionType) =>
-  ['if_condition', 'for_loop', 'while_loop'].includes(action)
+  ['if_condition', 'for_loop', 'while_loop', 'try_catch'].includes(action)
 
 function generateId(): string {
   return Math.random().toString(36).slice(2, 10)
@@ -325,18 +444,38 @@ function StepEditor({
     switch (step.action) {
       case 'go_to_url': return p.url ? String(p.url).slice(0, 40) : ''
       case 'click': case 'double_click': case 'right_click': case 'hover':
+      case 'wait_element': case 'scroll_to_element': case 'element_exists':
         return p.xpath ? String(p.xpath).slice(0, 40) : ''
       case 'type': return `"${String(p.text || '').slice(0, 20)}" → ${String(p.xpath || '').slice(0, 20)}`
       case 'delay': return `${p.ms}ms`
-      case 'wait_element': return String(p.xpath || '').slice(0, 40)
       case 'set_variable': return `${p.name} = ${String(p.value || '').slice(0, 20)}`
+      case 'increment_variable': return `${p.name} += ${p.amount}`
       case 'if_condition': return `${p.left} ${p.operator} ${p.right}`
       case 'for_loop': return `${p.count} times`
+      case 'while_loop': return `max ${p.maxIterations}`
       case 'execute_js': return String(p.code || '').slice(0, 30) + '...'
       case 'key_press': return String(p.key || '')
       case 'get_text': return `${String(p.xpath || '').slice(0, 20)} → $${p.saveAs}`
+      case 'get_attribute': return `${String(p.attribute || '')} → $${p.saveAs}`
+      case 'get_url': return `→ $${p.saveAs}`
       case 'http_request': return `${p.method} ${String(p.url || '').slice(0, 30)}`
+      case 'http_download': return String(p.url || '').slice(0, 40)
       case 'log': return String(p.message || '').slice(0, 30)
+      case 'click_coordinates': return `(${p.x}, ${p.y})`
+      case 'random_number': return `${p.min}-${p.max} → $${p.saveAs}`
+      case 'random_text': return `${p.length} chars → $${p.saveAs}`
+      case 'split_text': return `"${String(p.delimiter || '')}" [${p.index}] → $${p.saveAs}`
+      case 'regex_extract': return `/${String(p.pattern || '').slice(0, 15)}/ → $${p.saveAs}`
+      case 'parse_json': return `${String(p.path || '').slice(0, 20)} → $${p.saveAs}`
+      case 'math_execute': return `${String(p.expression || '').slice(0, 20)} → $${p.saveAs}`
+      case 'get_2fa': return `→ $${p.saveAs}`
+      case 'read_mail_otp': return `${String(p.email || '').slice(0, 20)} → $${p.saveAs}`
+      case 'ai_generate': return `"${String(p.prompt || '').slice(0, 25)}" → $${p.saveAs}`
+      case 'active_tab': return `tab ${p.tabIndex}`
+      case 'try_click': return `${String(p.xpath || '').slice(0, 20)} (${p.maxTries}x)`
+      case 'set_clipboard': return String(p.text || '').slice(0, 30)
+      case 'get_clipboard': return `→ $${p.saveAs}`
+      case 'count_elements': return `${String(p.xpath || '').slice(0, 20)} → $${p.saveAs}`
       default: return ''
     }
   }
@@ -451,6 +590,56 @@ function StepEditor({
                   <option value="warning">Warning</option>
                   <option value="error">Error</option>
                 </select>
+              ) : key === 'key' && step.action === 'key_press' ? (
+                <select
+                  value={String(val)}
+                  onChange={(e) => updateParam(key, e.target.value)}
+                  className="flex-1 px-2 py-1 rounded text-xs border"
+                  style={{ backgroundColor: 'var(--bg-page)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                >
+                  <option value="Enter">Enter</option>
+                  <option value="Tab">Tab</option>
+                  <option value="Escape">Escape</option>
+                  <option value="Backspace">Backspace</option>
+                  <option value="Delete">Delete</option>
+                  <option value="ArrowUp">Arrow Up</option>
+                  <option value="ArrowDown">Arrow Down</option>
+                  <option value="ArrowLeft">Arrow Left</option>
+                  <option value="ArrowRight">Arrow Right</option>
+                  <option value="Space">Space</option>
+                  <option value="Home">Home</option>
+                  <option value="End">End</option>
+                  <option value="PageUp">Page Up</option>
+                  <option value="PageDown">Page Down</option>
+                  <option value="F5">F5</option>
+                  <option value="Ctrl+A">Ctrl+A (Select All)</option>
+                  <option value="Ctrl+C">Ctrl+C (Copy)</option>
+                  <option value="Ctrl+V">Ctrl+V (Paste)</option>
+                </select>
+              ) : key === 'charset' ? (
+                <select
+                  value={String(val)}
+                  onChange={(e) => updateParam(key, e.target.value)}
+                  className="flex-1 px-2 py-1 rounded text-xs border"
+                  style={{ backgroundColor: 'var(--bg-page)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                >
+                  <option value="alphanumeric">Alphanumeric</option>
+                  <option value="alpha">Letters only</option>
+                  <option value="numeric">Numbers only</option>
+                  <option value="hex">Hexadecimal</option>
+                  <option value="email">Email-friendly</option>
+                </select>
+              ) : key === 'model' ? (
+                <select
+                  value={String(val)}
+                  onChange={(e) => updateParam(key, e.target.value)}
+                  className="flex-1 px-2 py-1 rounded text-xs border"
+                  style={{ backgroundColor: 'var(--bg-page)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                >
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  <option value="gpt-4o-mini">GPT-4o Mini</option>
+                  <option value="gpt-4o">GPT-4o</option>
+                </select>
               ) : (
                 <input
                   type={typeof val === 'number' ? 'number' : 'text'}
@@ -472,7 +661,7 @@ function StepEditor({
           {/* Then block */}
           <div className="ml-2 border-l-2 pl-2" style={{ borderColor: 'rgba(99, 102, 241, 0.3)' }}>
             <span className="text-[10px] font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>
-              {step.action === 'if_condition' ? 'Then' : 'Do'}
+              {step.action === 'if_condition' ? 'Then' : step.action === 'try_catch' ? 'Try' : 'Do'}
             </span>
             {(step.children || []).map((child, i) => (
               <StepEditor
@@ -501,9 +690,11 @@ function StepEditor({
           </div>
 
           {/* Else block (only for if_condition) */}
-          {step.action === 'if_condition' && (
+          {(step.action === 'if_condition' || step.action === 'try_catch') && (
             <div className="ml-2 border-l-2 pl-2 mt-1" style={{ borderColor: 'rgba(239, 68, 68, 0.3)' }}>
-              <span className="text-[10px] font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Else</span>
+              <span className="text-[10px] font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>
+                {step.action === 'try_catch' ? 'Catch' : 'Else'}
+              </span>
               {(step.elseChildren || []).map((child, i) => (
                 <StepEditor
                   key={child.id}
@@ -653,15 +844,91 @@ const BUILT_IN_TEMPLATES: Omit<Workflow, 'id'>[] = [
     description: 'Visit list of URLs and interact (like, comment)',
     category: 'social-media',
     variables: [
-      { name: 'urls', type: 'string', label: 'URLs (one per line)', defaultValue: '', required: true },
+      { name: 'count', type: 'number', label: 'Number of iterations', defaultValue: '10', required: true },
       { name: 'comment', type: 'string', label: 'Comment text', defaultValue: '', required: false },
     ],
     steps: [
       { id: '1', action: 'for_loop', label: 'For Loop', params: { count: 10, variable: 'i' }, enabled: true, children: [
         { id: '1a', action: 'delay', label: 'Delay', params: { ms: 2000 }, enabled: true },
-        { id: '1b', action: 'scroll', label: 'Scroll', params: { direction: 'down', amount: 500 }, enabled: true },
+        { id: '1b', action: 'random_scroll', label: 'Random Scroll', params: { minAmount: 200, maxAmount: 800, direction: 'down' }, enabled: true },
         { id: '1c', action: 'delay', label: 'Delay', params: { ms: 1000 }, enabled: true },
       ]},
+    ],
+  },
+  {
+    name: 'Register Account',
+    description: 'Navigate to registration page, fill form, submit',
+    category: 'social-media',
+    variables: [
+      { name: 'url', type: 'string', label: 'Registration URL', defaultValue: 'https://', required: true },
+      { name: 'username', type: 'string', label: 'Username', defaultValue: '', required: true },
+      { name: 'email', type: 'string', label: 'Email', defaultValue: '', required: true },
+      { name: 'password', type: 'secret', label: 'Password', defaultValue: '', required: true },
+    ],
+    steps: [
+      { id: '1', action: 'go_to_url', label: 'Go to URL', params: { url: '${url}' }, enabled: true },
+      { id: '2', action: 'delay', label: 'Delay', params: { ms: 2000 }, enabled: true },
+      { id: '3', action: 'wait_element', label: 'Wait Element', params: { xpath: "//input[@name='username' or @name='user' or @id='username']", timeout: 10000 }, enabled: true },
+      { id: '4', action: 'type', label: 'Type Username', params: { xpath: "//input[@name='username' or @name='user' or @id='username']", text: '${username}', clearFirst: true }, enabled: true },
+      { id: '5', action: 'type', label: 'Type Email', params: { xpath: "//input[@type='email' or @name='email']", text: '${email}', clearFirst: true }, enabled: true },
+      { id: '6', action: 'type', label: 'Type Password', params: { xpath: "//input[@type='password']", text: '${password}', clearFirst: true }, enabled: true },
+      { id: '7', action: 'click', label: 'Submit', params: { xpath: "//button[@type='submit' or contains(text(), 'Sign up') or contains(text(), 'Register')]", timeout: 5000 }, enabled: true },
+      { id: '8', action: 'delay', label: 'Wait', params: { ms: 3000 }, enabled: true },
+      { id: '9', action: 'screenshot', label: 'Screenshot', params: { saveAs: 'register_result.png' }, enabled: true },
+    ],
+  },
+  {
+    name: 'Cookie Backup & Restore',
+    description: 'Export cookies, save to variable, import later',
+    category: 'testing',
+    variables: [],
+    steps: [
+      { id: '1', action: 'cookie_export', label: 'Export Cookies', params: { saveAs: 'myCookies' }, enabled: true },
+      { id: '2', action: 'log', label: 'Log', params: { message: 'Cookies exported: ${myCookies}', level: 'info' }, enabled: true },
+    ],
+  },
+  {
+    name: 'Login with 2FA',
+    description: 'Login with email/password + TOTP 2FA code',
+    category: 'social-media',
+    variables: [
+      { name: 'url', type: 'string', label: 'Login URL', defaultValue: 'https://', required: true },
+      { name: 'email', type: 'string', label: 'Email', defaultValue: '', required: true },
+      { name: 'password', type: 'secret', label: 'Password', defaultValue: '', required: true },
+      { name: 'totpSecret', type: 'secret', label: '2FA Secret Key', defaultValue: '', required: true },
+    ],
+    steps: [
+      { id: '1', action: 'go_to_url', label: 'Go to URL', params: { url: '${url}' }, enabled: true },
+      { id: '2', action: 'wait_element', label: 'Wait Email', params: { xpath: "//input[@type='email' or @name='email']", timeout: 10000 }, enabled: true },
+      { id: '3', action: 'type', label: 'Type Email', params: { xpath: "//input[@type='email' or @name='email']", text: '${email}', clearFirst: true }, enabled: true },
+      { id: '4', action: 'click', label: 'Next', params: { xpath: "//button[@type='submit' or contains(text(), 'Next')]", timeout: 5000 }, enabled: true },
+      { id: '5', action: 'delay', label: 'Wait', params: { ms: 2000 }, enabled: true },
+      { id: '6', action: 'type', label: 'Type Password', params: { xpath: "//input[@type='password']", text: '${password}', clearFirst: true }, enabled: true },
+      { id: '7', action: 'click', label: 'Sign In', params: { xpath: "//button[@type='submit' or contains(text(), 'Sign in')]", timeout: 5000 }, enabled: true },
+      { id: '8', action: 'delay', label: 'Wait', params: { ms: 3000 }, enabled: true },
+      { id: '9', action: 'get_2fa', label: 'Generate 2FA', params: { secretKey: '${totpSecret}', saveAs: 'code2fa' }, enabled: true },
+      { id: '10', action: 'type', label: 'Type 2FA Code', params: { xpath: "//input[@name='totp' or @name='code' or @type='tel']", text: '${code2fa}', clearFirst: true }, enabled: true },
+      { id: '11', action: 'click', label: 'Verify', params: { xpath: "//button[@type='submit' or contains(text(), 'Verify')]", timeout: 5000 }, enabled: true },
+      { id: '12', action: 'delay', label: 'Wait', params: { ms: 3000 }, enabled: true },
+      { id: '13', action: 'screenshot', label: 'Screenshot', params: { saveAs: '2fa_login_result.png' }, enabled: true },
+    ],
+  },
+  {
+    name: 'Scrape Page Data',
+    description: 'Navigate to page, extract text/links, save to variables',
+    category: 'data-entry',
+    variables: [
+      { name: 'url', type: 'string', label: 'Target URL', defaultValue: 'https://', required: true },
+    ],
+    steps: [
+      { id: '1', action: 'go_to_url', label: 'Go to URL', params: { url: '${url}' }, enabled: true },
+      { id: '2', action: 'delay', label: 'Wait load', params: { ms: 3000 }, enabled: true },
+      { id: '3', action: 'get_url', label: 'Get URL', params: { saveAs: 'pageUrl' }, enabled: true },
+      { id: '4', action: 'execute_js', label: 'Get title', params: { code: 'document.title' }, enabled: true },
+      { id: '5', action: 'get_text', label: 'Get body text', params: { xpath: '//body', saveAs: 'bodyText' }, enabled: true },
+      { id: '6', action: 'count_elements', label: 'Count links', params: { xpath: '//a', saveAs: 'linkCount' }, enabled: true },
+      { id: '7', action: 'log', label: 'Log results', params: { message: 'URL: ${pageUrl}, Links: ${linkCount}', level: 'info' }, enabled: true },
+      { id: '8', action: 'screenshot', label: 'Screenshot', params: { saveAs: 'scrape_result.png' }, enabled: true },
     ],
   },
 ]
@@ -733,7 +1000,7 @@ export default function WorkflowsPage() {
       params: getDefaultParams(action),
       enabled: true,
       ...(hasChildren(action) ? { children: [] } : {}),
-      ...(action === 'if_condition' ? { elseChildren: [] } : {}),
+      ...((action === 'if_condition' || action === 'try_catch') ? { elseChildren: [] } : {}),
     }
     setWorkflow(prev => ({ ...prev, steps: [...prev.steps, newStep] }))
   }
