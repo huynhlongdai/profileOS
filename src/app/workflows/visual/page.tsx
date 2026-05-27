@@ -7,6 +7,7 @@ import {
   Controls,
   MiniMap,
   Panel,
+  Handle,
   addEdge,
   applyNodeChanges,
   applyEdgeChanges,
@@ -30,6 +31,7 @@ import {
   Copy, ChevronDown, ChevronRight, Loader2, X,
   ArrowLeft, Sparkles, Settings, GripVertical, Mail,
   ArrowDown, ArrowUp,
+  Circle, Square, Pause,
 } from 'lucide-react'
 
 // ============ Types ============
@@ -237,6 +239,14 @@ function ActionNode({ data, selected }: { data: { actionType: ActionType; label:
         maxWidth: 220,
       }}
     >
+      {/* Target handle (top) — not on start node */}
+      {data.actionType !== 'start' && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          className="!w-3 !h-3 !bg-indigo-500 !border-2 !border-indigo-300 hover:!bg-indigo-400 !-top-1.5"
+        />
+      )}
       {/* Header */}
       <div
         className="flex items-center gap-2 px-3 py-2 rounded-t-lg"
@@ -251,12 +261,20 @@ function ActionNode({ data, selected }: { data: { actionType: ActionType; label:
           {summary}
         </div>
       )}
-      {/* Handles - rendered by ReactFlow based on nodeTypes config */}
+      {/* Branch labels for if_condition */}
       {isBranch && (
         <div className="flex justify-between px-3 py-1 text-[9px]">
           <span className="text-emerald-400">True</span>
           <span className="text-red-400">False</span>
         </div>
+      )}
+      {/* Source handle (bottom) — not on end node */}
+      {data.actionType !== 'end' && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className="!w-3 !h-3 !bg-indigo-500 !border-2 !border-indigo-300 hover:!bg-indigo-400 !-bottom-1.5"
+        />
       )}
     </div>
   )
@@ -501,7 +519,7 @@ function AIPromptBar({ onGenerate }: { onGenerate: (prompt: string) => void }) {
   }
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 border-t" style={{ borderColor: 'var(--border-color)', backgroundColor: '#12121f' }}>
+    <div className="flex items-center gap-2">
       <Sparkles size={14} className="text-indigo-400 flex-shrink-0" />
       <input
         type="text"
@@ -519,6 +537,167 @@ function AIPromptBar({ onGenerate }: { onGenerate: (prompt: string) => void }) {
         {loading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
         Generate
       </button>
+    </div>
+  )
+}
+
+// ============ Recorder Bar ============
+
+interface RecorderBarProps {
+  onStepsImported: (steps: Array<{ action: string; label: string; params: Record<string, unknown> }>) => void
+}
+
+function RecorderBar({ onStepsImported }: RecorderBarProps) {
+  const [status, setStatus] = useState<'idle' | 'recording' | 'paused' | 'loading'>('idle')
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [debugPort, setDebugPort] = useState('')
+  const [actionCount, setActionCount] = useState(0)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const startRecording = async () => {
+    if (!debugPort.trim()) {
+      alert('Enter the CDP debug port of the browser to record')
+      return
+    }
+    setStatus('loading')
+    try {
+      const res = await fetch('/api/recorder/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ debugPort: parseInt(debugPort) }),
+      })
+      const data = await res.json()
+      if (data.sessionId) {
+        setSessionId(data.sessionId)
+        setStatus('recording')
+        setActionCount(0)
+        // Poll for action count
+        pollRef.current = setInterval(async () => {
+          try {
+            const r = await fetch(`/api/recorder/status?sessionId=${data.sessionId}`)
+            const d = await r.json()
+            setActionCount(d.actionCount ?? 0)
+          } catch { /* ignore */ }
+        }, 2000)
+      } else {
+        alert('Failed to start recording: ' + (data.error || 'Unknown'))
+        setStatus('idle')
+      }
+    } catch (e) {
+      alert('Failed: ' + (e instanceof Error ? e.message : 'Unknown'))
+      setStatus('idle')
+    }
+  }
+
+  const stopRecording = async () => {
+    if (!sessionId) return
+    if (pollRef.current) {
+      clearInterval(pollRef.current)
+      pollRef.current = null
+    }
+    setStatus('loading')
+    try {
+      const res = await fetch('/api/recorder/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      })
+      const data = await res.json()
+      if (data.steps && data.steps.length > 0) {
+        onStepsImported(data.steps)
+      }
+      setStatus('idle')
+      setSessionId(null)
+      setActionCount(0)
+    } catch (e) {
+      alert('Failed: ' + (e instanceof Error ? e.message : 'Unknown'))
+      setStatus('idle')
+    }
+  }
+
+  const pauseRecording = async () => {
+    if (!sessionId) return
+    await fetch('/api/recorder/pause', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId }),
+    })
+    setStatus('paused')
+  }
+
+  const resumeRecording = async () => {
+    if (!sessionId) return
+    await fetch('/api/recorder/resume', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId }),
+    })
+    setStatus('recording')
+  }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [])
+
+  if (status === 'idle') {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="w-px h-5 bg-gray-700" />
+        <input
+          type="text"
+          value={debugPort}
+          onChange={(e) => setDebugPort(e.target.value)}
+          placeholder="CDP Port"
+          className="w-20 px-2 py-1.5 rounded-lg text-xs border bg-[#1a1a2e] border-gray-700 text-white placeholder-gray-500"
+        />
+        <button
+          onClick={startRecording}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-600 hover:bg-red-500 text-white flex items-center gap-1"
+        >
+          <Circle size={10} fill="currentColor" /> Record
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="w-px h-5 bg-gray-700" />
+      {status === 'recording' && (
+        <div className="flex items-center gap-1.5">
+          <span className="inline-block w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+          <span className="text-xs text-red-400 font-medium">REC</span>
+          <span className="text-xs text-gray-400">{actionCount} actions</span>
+        </div>
+      )}
+      {status === 'paused' && (
+        <div className="flex items-center gap-1.5">
+          <span className="inline-block w-2 h-2 bg-yellow-500 rounded-full" />
+          <span className="text-xs text-yellow-400 font-medium">PAUSED</span>
+          <span className="text-xs text-gray-400">{actionCount} actions</span>
+        </div>
+      )}
+      {status === 'loading' && (
+        <Loader2 size={12} className="text-gray-400 animate-spin" />
+      )}
+      {status === 'recording' && (
+        <button onClick={pauseRecording} className="p-1.5 rounded-lg hover:bg-white/10 text-yellow-400" title="Pause">
+          <Pause size={12} />
+        </button>
+      )}
+      {status === 'paused' && (
+        <button onClick={resumeRecording} className="p-1.5 rounded-lg hover:bg-white/10 text-green-400" title="Resume">
+          <Play size={12} />
+        </button>
+      )}
+      {(status === 'recording' || status === 'paused') && (
+        <button onClick={stopRecording} className="p-1.5 rounded-lg hover:bg-white/10 text-red-400" title="Stop & Import">
+          <Square size={12} fill="currentColor" />
+        </button>
+      )}
     </div>
   )
 }
@@ -606,8 +785,9 @@ function VisualBuilderInner() {
       })
 
       const meta = getActionMeta(actionType)
+      const newNodeId = nextNodeId()
       const newNode: Node = {
-        id: nextNodeId(),
+        id: newNodeId,
         type: 'action',
         position,
         data: {
@@ -619,8 +799,34 @@ function VisualBuilderInner() {
         targetPosition: Position.Top,
       }
       setNodes((nds) => [...nds, newNode])
+
+      // Auto-connect: find the nearest node above the drop position that has no outgoing edge
+      setEdges((eds) => {
+        const sourcesWithEdges = new Set(eds.map(e => e.source))
+        const candidates = nodes
+          .filter(n => !sourcesWithEdges.has(n.id) && n.data.actionType !== 'end')
+          .filter(n => n.position.y < position.y)
+          .sort((a, b) => {
+            const distA = Math.hypot(a.position.x - position.x, a.position.y - position.y)
+            const distB = Math.hypot(b.position.x - position.x, b.position.y - position.y)
+            return distA - distB
+          })
+        const nearest = candidates[0]
+        if (nearest) {
+          const newEdge: Edge = {
+            id: `e_${nearest.id}_${newNodeId}`,
+            source: nearest.id,
+            target: newNodeId,
+            animated: true,
+            style: { stroke: '#6366f1', strokeWidth: 2 },
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#6366f1' },
+          }
+          return [...eds, newEdge]
+        }
+        return eds
+      })
     },
-    [reactFlowInstance],
+    [reactFlowInstance, nodes],
   )
 
   const onDragStart = useCallback((e: React.DragEvent, type: ActionType) => {
@@ -875,14 +1081,28 @@ Return ONLY a JSON array of steps, no explanation.`
             />
             <Panel position="top-center">
               <div className="px-3 py-1.5 rounded-lg text-[10px] text-gray-500" style={{ backgroundColor: '#1e1e32' }}>
-                Drag actions from sidebar → Connect nodes → Edit in properties panel
+                Drag actions from sidebar → Drag from handle (dot) to connect nodes → Click node to edit
               </div>
             </Panel>
           </ReactFlow>
         </div>
 
-        {/* AI Prompt Bar */}
-        <AIPromptBar onGenerate={onAIGenerate} />
+        {/* AI Prompt Bar + Recorder Bar */}
+        <div className="flex items-center gap-2 px-3 py-1.5 border-t" style={{ borderColor: 'var(--border-color)', backgroundColor: '#12121f' }}>
+          <div className="flex-1">
+            <AIPromptBar onGenerate={onAIGenerate} />
+          </div>
+          <RecorderBar
+            onStepsImported={(steps) => {
+              const imported = stepsToNodes(steps)
+              setNodes((prev) => [...prev, ...imported.nodes.map(n => ({
+                ...n,
+                position: { x: n.position.x + (prev.length * 20), y: n.position.y + (prev.length * 20) },
+              }))])
+              setEdges((prev) => [...prev, ...imported.edges])
+            }}
+          />
+        </div>
       </div>
 
       {/* Right sidebar - properties */}
