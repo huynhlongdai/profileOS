@@ -23,6 +23,7 @@
   "dependencies": {
     "@prisma/client": "^5.7.1",
     "@types/ws": "^8.18.1",
+    "@xyflow/react": "^12.10.2",
     "bullmq": "^5.70.4",
     "chrome-remote-interface": "^0.33.3",
     "http-proxy-agent": "^7.0.2",

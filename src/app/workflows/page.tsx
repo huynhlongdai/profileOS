@@ -9,6 +9,7 @@ import {
   Copy, Upload, Code, Image, Mail, Shield,
   ArrowUp, ArrowDown, Settings, AlertTriangle,
   CheckCircle, XCircle, Loader2, ExternalLink,
+  Sparkles, Workflow,
 } from 'lucide-react'
 import Card, { CardHeader } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -1277,6 +1278,11 @@ export default function WorkflowsPage() {
             <Button size="sm" variant="secondary" onClick={() => setShowTemplates(true)}>
               <FileText size={14} /> Templates
             </Button>
+            <a href="/workflows/visual">
+              <Button size="sm" variant="secondary">
+                <Sparkles size={14} /> Visual Builder
+              </Button>
+            </a>
             <Button size="sm" onClick={() => { resetEditor(); setView('editor') }}>
               <Plus size={14} /> New Workflow
             </Button>
