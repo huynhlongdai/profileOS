@@ -7,6 +7,7 @@ import {
   Controls,
   MiniMap,
   Panel,
+  Handle,
   addEdge,
   applyNodeChanges,
   applyEdgeChanges,
@@ -238,6 +239,14 @@ function ActionNode({ data, selected }: { data: { actionType: ActionType; label:
         maxWidth: 220,
       }}
     >
+      {/* Target handle (top) — not on start node */}
+      {data.actionType !== 'start' && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          className="!w-3 !h-3 !bg-indigo-500 !border-2 !border-indigo-300 hover:!bg-indigo-400 !-top-1.5"
+        />
+      )}
       {/* Header */}
       <div
         className="flex items-center gap-2 px-3 py-2 rounded-t-lg"
@@ -252,12 +261,20 @@ function ActionNode({ data, selected }: { data: { actionType: ActionType; label:
           {summary}
         </div>
       )}
-      {/* Handles - rendered by ReactFlow based on nodeTypes config */}
+      {/* Branch labels for if_condition */}
       {isBranch && (
         <div className="flex justify-between px-3 py-1 text-[9px]">
           <span className="text-emerald-400">True</span>
           <span className="text-red-400">False</span>
         </div>
+      )}
+      {/* Source handle (bottom) — not on end node */}
+      {data.actionType !== 'end' && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className="!w-3 !h-3 !bg-indigo-500 !border-2 !border-indigo-300 hover:!bg-indigo-400 !-bottom-1.5"
+        />
       )}
     </div>
   )
@@ -768,8 +785,9 @@ function VisualBuilderInner() {
       })
 
       const meta = getActionMeta(actionType)
+      const newNodeId = nextNodeId()
       const newNode: Node = {
-        id: nextNodeId(),
+        id: newNodeId,
         type: 'action',
         position,
         data: {
@@ -781,8 +799,34 @@ function VisualBuilderInner() {
         targetPosition: Position.Top,
       }
       setNodes((nds) => [...nds, newNode])
+
+      // Auto-connect: find the nearest node above the drop position that has no outgoing edge
+      setEdges((eds) => {
+        const sourcesWithEdges = new Set(eds.map(e => e.source))
+        const candidates = nodes
+          .filter(n => !sourcesWithEdges.has(n.id) && n.data.actionType !== 'end')
+          .filter(n => n.position.y < position.y)
+          .sort((a, b) => {
+            const distA = Math.hypot(a.position.x - position.x, a.position.y - position.y)
+            const distB = Math.hypot(b.position.x - position.x, b.position.y - position.y)
+            return distA - distB
+          })
+        const nearest = candidates[0]
+        if (nearest) {
+          const newEdge: Edge = {
+            id: `e_${nearest.id}_${newNodeId}`,
+            source: nearest.id,
+            target: newNodeId,
+            animated: true,
+            style: { stroke: '#6366f1', strokeWidth: 2 },
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#6366f1' },
+          }
+          return [...eds, newEdge]
+        }
+        return eds
+      })
     },
-    [reactFlowInstance],
+    [reactFlowInstance, nodes],
   )
 
   const onDragStart = useCallback((e: React.DragEvent, type: ActionType) => {
@@ -1037,7 +1081,7 @@ Return ONLY a JSON array of steps, no explanation.`
             />
             <Panel position="top-center">
               <div className="px-3 py-1.5 rounded-lg text-[10px] text-gray-500" style={{ backgroundColor: '#1e1e32' }}>
-                Drag actions from sidebar → Connect nodes → Edit in properties panel
+                Drag actions from sidebar → Drag from handle (dot) to connect nodes → Click node to edit
               </div>
             </Panel>
           </ReactFlow>
