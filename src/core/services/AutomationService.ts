@@ -8,6 +8,7 @@ import type {
 import { RecorderInjector } from '@/lib/automation/recorder-injector'
 import CDP from 'chrome-remote-interface'
 import { ExecutionContext } from '@/core/automation/ExecutionContext'
+import { WorkflowExecutor } from '@/core/automation/WorkflowExecutor'
 
 export class AutomationService {
     /**
@@ -308,6 +309,29 @@ export class AutomationService {
     }
 
     /**
+     * Update template
+     */
+    async updateTemplate(templateId: string, data: {
+        name?: string
+        description?: string
+        category?: string
+        actions?: any[]
+        variables?: any[]
+    }): Promise<any> {
+        const updateData: Record<string, any> = {}
+        if (data.name !== undefined) updateData.name = data.name
+        if (data.description !== undefined) updateData.description = data.description
+        if (data.category !== undefined) updateData.category = data.category
+        if (data.actions !== undefined) updateData.actionsJson = JSON.stringify(data.actions)
+        if (data.variables !== undefined) updateData.variablesJson = JSON.stringify(data.variables)
+
+        return await prisma.automationTemplate.update({
+            where: { id: templateId },
+            data: updateData,
+        })
+    }
+
+    /**
      * Delete template
      */
     async deleteTemplate(templateId: string): Promise<void> {
@@ -385,19 +409,10 @@ export class AutomationService {
                 message: 'Execution started',
             })
 
-            const actions = JSON.parse(execution.actionsJson) as RecordedAction[]
+            const actions = JSON.parse(execution.actionsJson)
             const variables = execution.variablesJson
                 ? JSON.parse(execution.variablesJson)
                 : {}
-
-            // Replace variables in actions
-            const processedActions = this.replaceVariables(actions, variables)
-
-            logs.push({
-                timestamp: Date.now(),
-                level: 'info',
-                message: `Processing ${processedActions.length} actions`,
-            })
 
             // Get profile to connect to browser
             const profile = await prisma.profile.findUnique({
@@ -418,18 +433,42 @@ export class AutomationService {
                 throw new Error('Profile does not have remote debugging port')
             }
 
-            logs.push({
-                timestamp: Date.now(),
-                level: 'info',
-                message: `Connecting to browser on port ${profile.remoteDebuggingPort}`,
-            })
+            // Detect format: workflow steps have 'action' field, recorded actions have 'type' field
+            const isWorkflowFormat = Array.isArray(actions) && actions.length > 0 && 'action' in actions[0] && !('type' in actions[0])
 
-            // Execute actions using CDP
-            const result = await this.executeActionsViaCDP(
-                processedActions,
-                profile.remoteDebuggingPort,
-                logs
-            )
+            let result: ExecutionResult
+
+            if (isWorkflowFormat) {
+                // Use new WorkflowExecutor for workflow builder steps
+                logs.push({
+                    timestamp: Date.now(),
+                    level: 'info',
+                    message: `Executing ${actions.length} workflow steps via WorkflowExecutor`,
+                })
+
+                const executor = new WorkflowExecutor()
+                const wfResult = await executor.execute(actions, profile.remoteDebuggingPort, variables)
+                logs.push(...wfResult.logs)
+                result = {
+                    success: wfResult.success,
+                    logs: wfResult.logs,
+                    stats: wfResult.stats,
+                    data: { variables: wfResult.variables },
+                }
+            } else {
+                // Legacy RecordedAction format
+                const processedActions = this.replaceVariables(actions as RecordedAction[], variables)
+                logs.push({
+                    timestamp: Date.now(),
+                    level: 'info',
+                    message: `Processing ${processedActions.length} recorded actions via CDP`,
+                })
+                result = await this.executeActionsViaCDP(
+                    processedActions,
+                    profile.remoteDebuggingPort,
+                    logs
+                )
+            }
 
             const duration = Date.now() - startTime
 
